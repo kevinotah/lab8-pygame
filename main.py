@@ -9,13 +9,14 @@ pygame.init()
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
 FPS = 60
-NUM_SQUARES = 10
+NUM_SQUARES = 100
 SQUARE_SIZE = 30
 MAX_SPEED = 5
 
 # Colors
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
+RANDOM_COLOUR = [random.randint(0, 255) for _ in range(3)]
 
 
 class Square:
@@ -89,7 +90,7 @@ def main():
             square.update()
         
         # Draw
-        screen.fill(WHITE)
+        screen.fill(RANDOM_COLOUR)
         for square in squares:
             square.draw(screen)
         pygame.display.flip()

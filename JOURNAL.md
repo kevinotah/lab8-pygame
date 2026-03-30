@@ -68,3 +68,19 @@
 - **Hook Version**: 1.02
 - **Date**: 30-03-2026 14:10
 - **Prompt**: main.py still working: ModuleNotFoundError for pygame
+### **New Interaction**
+- **Agent Version**: 2.2
+- **Date**: 30-03-2026 14:14
+- **User**: kevin.ogbusuo@epita.fr
+- **Prompt**: main.py still working: ModuleNotFoundError for pygame
+- **CoPilot Mode**: Plan
+- **CoPilot Model**: GPT-5.3-Codex
+- **Socratic Mode**: ON
+- **Changes Made**: Rebuilt .venv using Python 3.12 (instead of 3.14) due to pygame wheel unavailability for Python 3.14. Successfully installed pygame 2.6.1. Updated requirements.txt with exact dependencies.
+- **Context and Reasons for Changes**: Python 3.14 is too new; pygame doesn't have pre-built wheels for it yet. Python 3.12 has stable pygame support. Deleted .venv and recreated with py -3.12 to ensure compatibility.
+
+
+### **New Interaction**
+- **Hook Version**: 1.02
+- **Date**: 30-03-2026 14:16
+- **Prompt**: How do i activate venv?

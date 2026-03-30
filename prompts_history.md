@@ -11,3 +11,6 @@ Automatically captured prompt log. Entries are appended in chronological order (
 ### 30-03-2026 14:01
 - **Prompt**: you decide
 
+### 30-03-2026 14:03
+- **Prompt**: can you create a local virtual environment (.venv), activate it and install pygame? THen create a requirements.txt file that will track the dependencies for this project. Then create a README.md file for this project.
+

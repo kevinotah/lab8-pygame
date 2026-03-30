@@ -10,8 +10,11 @@ SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
 FPS = 60
 NUM_SQUARES = 100
-SQUARE_SIZE = 30
 MAX_SPEED = 5
+
+# Size range (NEW)
+MIN_SIZE = 10
+MAX_SIZE = 50
 
 # Colors
 WHITE = (255, 255, 255)
@@ -23,50 +26,59 @@ class Square:
     """Represents a moving square on the screen."""
     
     def __init__(self):
-        # Random starting position
-        self.x = random.randint(0, SCREEN_WIDTH - SQUARE_SIZE)
-        self.y = random.randint(0, SCREEN_HEIGHT - SQUARE_SIZE)
+        # Random size (NEW)
+        self.size = random.randint(MIN_SIZE, MAX_SIZE)
+
+        # Random starting position (UPDATED to use self.size)
+        self.x = random.randint(0, SCREEN_WIDTH - self.size)
+        self.y = random.randint(0, SCREEN_HEIGHT - self.size)
         
         # Random color
-        self.color = (random.randint(50, 255), random.randint(50, 255), random.randint(50, 255))
+        self.color = (
+            random.randint(50, 255),
+            random.randint(50, 255),
+            random.randint(50, 255)
+        )
         
-        # Random direction (angle in radians)
+        # Random direction
         self.angle = random.uniform(0, 2 * math.pi)
         
-        # Direction change timer: change direction every ~1 second (60 frames at 60 FPS)
+        # Direction change timer
         self.direction_timer = 0
         self.direction_change_interval = random.randint(30, 90)
-    
+
+        size_ratio = (self.size - MIN_SIZE) / (MAX_SIZE - MIN_SIZE)
+
+        self.speed = MAX_SPEED * (1 - size_ratio)
+
     def update(self):
         """Update position and handle bouncing."""
-        # Update direction timer
+        
+        # Direction change logic (UNCHANGED)
         self.direction_timer += 1
         if self.direction_timer >= self.direction_change_interval:
-            # Pick new random direction
             self.angle = random.uniform(0, 2 * math.pi)
             self.direction_timer = 0
             self.direction_change_interval = random.randint(30, 90)
         
-        # Calculate velocity from angle
-        vx = MAX_SPEED * math.cos(self.angle)
-        vy = MAX_SPEED * math.sin(self.angle)
+        vx = self.speed * math.cos(self.angle)
+        vy = self.speed * math.sin(self.angle)
         
         # Update position
         self.x += vx
         self.y += vy
         
-        # Bounce off edges
-        if self.x <= 0 or self.x >= SCREEN_WIDTH - SQUARE_SIZE:
-            self.angle = math.pi - self.angle  # Reflect horizontally
-            self.x = max(0, min(SCREEN_WIDTH - SQUARE_SIZE, self.x))
+        if self.x <= 0 or self.x >= SCREEN_WIDTH - self.size:
+            self.angle = math.pi - self.angle
+            self.x = max(0, min(SCREEN_WIDTH - self.size, self.x))
         
-        if self.y <= 0 or self.y >= SCREEN_HEIGHT - SQUARE_SIZE:
-            self.angle = -self.angle  # Reflect vertically
-            self.y = max(0, min(SCREEN_HEIGHT - SQUARE_SIZE, self.y))
-    
+        if self.y <= 0 or self.y >= SCREEN_HEIGHT - self.size:
+            self.angle = -self.angle
+            self.y = max(0, min(SCREEN_HEIGHT - self.size, self.y))
+
     def draw(self, screen):
         """Draw the square on the screen."""
-        pygame.draw.rect(screen, self.color, (self.x, self.y, SQUARE_SIZE, SQUARE_SIZE))
+        pygame.draw.rect(screen, self.color, (self.x, self.y, self.size, self.size))
 
 
 def main():
@@ -75,17 +87,17 @@ def main():
     pygame.display.set_caption("Random Moving Squares")
     clock = pygame.time.Clock()
     
-    # Create 10 squares
+    # Create squares
     squares = [Square() for _ in range(NUM_SQUARES)]
     
     running = True
     while running:
-        # Handle events
+        # Events
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
         
-        # Update squares
+        # Update
         for square in squares:
             square.update()
         
@@ -95,7 +107,6 @@ def main():
             square.draw(screen)
         pygame.display.flip()
         
-        # Frame rate
         clock.tick(FPS)
     
     pygame.quit()

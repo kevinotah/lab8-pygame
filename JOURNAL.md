@@ -105,3 +105,8 @@
 - **Hook Version**: 1.02
 - **Date**: 06-04-2026 12:41
 - **Prompt**: 1. For self.x and self.y, why not just (o, SCREEN_WIDTH? 2. self.angle ... explain better 3. What's the logic behind the size_ratio and self.speed thing? I totally don't get it. 4. What does random.uniform do?  5. Why math.pi? 6. Explain more in depth update() 7. What is velocity as it used in this game and how does it differ from speed? 8. Also, the max(0, min(x, y)) thing has never made sense to me, could you explain it well? Also, forget the ELI5. Explain clearly but to someone who is a first year in CS.
+
+### **New Interaction**
+- **Hook Version**: 1.02
+- **Date**: 06-04-2026 12:49
+- **Prompt**: I'll just go watch a YouTube video on pygame

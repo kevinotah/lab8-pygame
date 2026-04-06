@@ -95,3 +95,8 @@
 - **Changes Made**: No changes; provided activation command documentation.
 - **Context and Reasons for Changes**: User asked for venv activation instructions; provided Windows PowerShell command and alternatives for other environments.
 
+
+### **New Interaction**
+- **Hook Version**: 1.02
+- **Date**: 06-04-2026 12:14
+- **Prompt**: Alright, time to break this down cleanly and clearly to help me understand what is actually going on in this piece of code, step-by-step. Assume this is my first time using pygame, cos it kinda is. If needed, ELI5.

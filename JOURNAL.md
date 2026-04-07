@@ -110,3 +110,8 @@
 - **Hook Version**: 1.02
 - **Date**: 06-04-2026 12:49
 - **Prompt**: I'll just go watch a YouTube video on pygame
+
+### **New Interaction**
+- **Hook Version**: 1.02
+- **Date**: 07-04-2026 11:31
+- **Prompt**: how do I make the smaller squares "flee" away from the bigger ones? and still keep their randomness

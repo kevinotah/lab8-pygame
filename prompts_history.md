@@ -32,3 +32,6 @@ Automatically captured prompt log. Entries are appended in chronological order (
 ### 07-04-2026 11:31
 - **Prompt**: how do I make the smaller squares "flee" away from the bigger ones? and still keep their randomness
 
+### 07-04-2026 11:43
+- **Prompt**: This is literally physics, could you break it down a little more? with steps possibly
+

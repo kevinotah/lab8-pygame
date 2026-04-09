@@ -1,72 +1,46 @@
 # Pygame Random Moving Squares
 
-A simple Pygame application that displays 10 colorful squares moving randomly across the screen with realistic bounce physics.
+A small Pygame project that draws 100 moving squares with random sizes, colors, starting positions, and directions. The squares bounce off the window edges, slowly change direction over time, and use a basic flee helper to move away from larger nearby squares.
 
 ## Features
 
-- **10 animated squares** with random colors
-- **Smooth random movement** with direction changes every 0.5–1.5 seconds
-- **Realistic bounce physics** when squares hit screen edges
-- **60 FPS rendering** for smooth animation
+- 100 animated squares
+- Random size, color, position, and direction for each square
+- Edge bouncing using reflected movement angles
+- Direction changes at random intervals
+- A fledgling flee mechanic for smaller squares near bigger ones
+- FPS counter drawn on screen
 
 ## Requirements
 
-- Python 3.7+
-- Pygame 2.0+
+- Python 3.12+
+- Pygame 2.6+
 
-## Installation
+## Setup
 
-1. Clone or download this repository.
+1. Create and activate a virtual environment.
+  ```bash
+  py -3.12 -m venv .venv
+  .\.venv\Scripts\Activate.ps1
+  ```
 
-2. Create and activate a virtual environment:
-   ```bash
-   python -m venv .venv
-   .\.venv\Scripts\Activate  # On macOS/Linux: source .venv/bin/activate
-   ```
+2. Install dependencies.
+  ```bash
+  pip install -r requirements.txt
+  ```
 
-3. Install dependencies:
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-## Running the Application
+## Run
 
 ```bash
 python main.py
 ```
 
-The window will display 10 moving squares. Close the window to exit.
-
 ## How It Works
 
-### The `Square` Class
+The `Square` class stores one square's position, size, color, direction, and speed. The `update()` method moves the square each frame, optionally adjusts its direction, applies flee behavior using the list of all squares, and bounces it off the edges. The main loop creates the squares once, updates them every frame, draws them, and keeps the animation at 60 FPS.
 
-Each square has:
-- **Position** (`x`, `y`): where the square is drawn
-- **Color**: random RGB values
-- **Direction**: an angle (in radians) that controls movement
-- **Direction timer**: triggers a new random direction every 30–90 frames
+## Notes
 
-### Movement & Physics
-
-- Motion is calculated using trigonometry: 
-  - `vx = MAX_SPEED * cos(angle)`
-  - `vy = MAX_SPEED * sin(angle)`
-- When a square hits a wall:
-  - Horizontal bounce: `angle = π - angle`
-  - Vertical bounce: `angle = -angle`
-
-### Game Loop
-
-1. **Update**: Move all squares and handle bounces
-2. **Render**: Draw white background and all squares
-3. **Frame rate**: Lock to 60 FPS
-
-## Customization
-
-Edit `main.py` to tweak:
-- `SCREEN_WIDTH` / `SCREEN_HEIGHT`: window size
-- `NUM_SQUARES`: number of moving squares
-- `SQUARE_SIZE`: side length of each square
-- `MAX_SPEED`: movement speed
-- `direction_change_interval`: how often squares change direction
+- `NUM_SQUARES` controls how many squares appear.
+- `danger_distance` controls how close a larger square must be before a smaller one reacts.
+- `MAX_SPEED`, `MIN_SIZE`, and `MAX_SIZE` control the feel of the animation.

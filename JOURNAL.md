@@ -135,3 +135,8 @@
 - **Hook Version**: 1.02
 - **Date**: 09-04-2026 20:26
 - **Prompt**: It's been a few days, Ive lost track. Could you please refresh my memory on what's going on
+
+### **New Interaction**
+- **Hook Version**: 1.02
+- **Date**: 09-04-2026 20:30
+- **Prompt**: yeah, the update() part would be nice. How do I get a list of all the squares when I'm implementing update() in one instance of the square class?

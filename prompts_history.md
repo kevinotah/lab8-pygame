@@ -47,3 +47,6 @@ Automatically captured prompt log. Entries are appended in chronological order (
 ### 09-04-2026 20:30
 - **Prompt**: yeah, the update() part would be nice. How do I get a list of all the squares when I'm implementing update() in one instance of the square class?
 
+### 09-04-2026 20:32
+- **Prompt**: Damn, could you please implement stubs/todos in the code that will enable me understand what to do and implement it myself
+

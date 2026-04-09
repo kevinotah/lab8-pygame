@@ -50,3 +50,6 @@ Automatically captured prompt log. Entries are appended in chronological order (
 ### 09-04-2026 20:32
 - **Prompt**: Damn, could you please implement stubs/todos in the code that will enable me understand what to do and implement it myself
 
+### 09-04-2026 20:52
+- **Prompt**: That was it? It feels easy but not easy at the same time. I guess I contributed to my own misunderstanding since I didn't fully implement the intial code myself.   Honestly, I still don't fully understand this one as well, so do a final rundown of everything in the code. Detailed,clean, and as it happens (not necessarily line by line)
+

@@ -145,3 +145,30 @@
 - **Hook Version**: 1.02
 - **Date**: 09-04-2026 20:32
 - **Prompt**: Damn, could you please implement stubs/todos in the code that will enable me understand what to do and implement it myself
+### **New Interaction**
+- **Agent Version**: 2.2
+- **Date**: 09-04-2026 20:36
+- **User**: kevin.ogbusuo@epita.fr
+- **Prompt**: Damn, could you please implement stubs/todos in the code that will enable me understand what to do and implement it myself
+- **CoPilot Mode**: Edit
+- **CoPilot Model**: GPT-5.3-Codex
+- **Socratic Mode**: ON
+- **Changes Made**: Added a runnable scaffold in main.py with explicit TODO comments, introduced compute_flee_vector(all_squares) as a stub, and fixed the update call to pass the square list.
+- **Context and Reasons for Changes**: User wanted guidance rather than a full solution, so the code now shows where the fleeing logic belongs while preserving a working random-movement demo.
+
+### **New Interaction**
+- **Agent Version**: 2.2
+- **Date**: 09-04-2026 20:36
+- **User**: kevin.ogbusuo@epita.fr
+- **Prompt**: Damn, could you please implement stubs/todos in the code that will enable me understand what to do and implement it myself
+- **CoPilot Mode**: Edit
+- **CoPilot Model**: GPT-5.3-Codex
+- **Socratic Mode**: ON
+- **Changes Made**: Added a runnable scaffold in main.py with explicit TODO comments, introduced compute_flee_vector(all_squares) as a stub, and fixed the update call to pass the square list.
+- **Context and Reasons for Changes**: User wanted guidance rather than a full solution, so the code now shows where the fleeing logic belongs while preserving a working random-movement demo.
+
+
+### **New Interaction**
+- **Hook Version**: 1.02
+- **Date**: 09-04-2026 20:52
+- **Prompt**: That was it? It feels easy but not easy at the same time. I guess I contributed to my own misunderstanding since I didn't fully implement the intial code myself.   Honestly, I still don't fully understand this one as well, so do a final rundown of everything in the code. Detailed,clean, and as it happens (not necessarily line by line)

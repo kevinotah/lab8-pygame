@@ -56,3 +56,6 @@ Automatically captured prompt log. Entries are appended in chronological order (
 ### 09-04-2026 20:55
 - **Prompt**: Please update the README accordingly and remove unnecessary comments from main.py
 
+### 13-04-2026 14:14
+- **Prompt**: activate the journal logger
+

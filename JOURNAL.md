@@ -188,3 +188,8 @@
 - **Changes Made**: Cleaned noisy comments from main.py, kept the flee logic intact, and refreshed README.md to describe the current 100-square animation, flee helper, setup, and runtime behavior.
 - **Context and Reasons for Changes**: The documentation was out of sync with the current code, and the source file had a lot of instructional comments that were no longer needed once the structure was clear.
 
+
+### **New Interaction**
+- **Hook Version**: 1.02
+- **Date**: 13-04-2026 14:14
+- **Prompt**: activate the journal logger

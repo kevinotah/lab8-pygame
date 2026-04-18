@@ -8,7 +8,7 @@ SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
 FPS = 60
 NUM_SQUARES = 100
-MAX_SPEED = 5
+MAX_SPEED = 300
 
 danger_distance = 50
 
@@ -41,29 +41,31 @@ class Square:
         self.angle = random.uniform(0, 2 * math.pi)
 
         self.direction_timer = 0
-        self.direction_change_interval = random.randint(30, 90)
+        self.direction_change_interval = random.uniform(0.5, 1.5)
 
         size_ratio = (self.size - MIN_SIZE) / (MAX_SIZE - MIN_SIZE)
         self.speed = MAX_SPEED * (1 - size_ratio)
+        
+        # life_span = random.randint(30, 180)
 
-    def update(self, all_squares):
+    def update(self, all_squares, dt):
         """Update position and handle bouncing."""
 
-        self.direction_timer += 1
+        self.direction_timer += dt
         if self.direction_timer >= self.direction_change_interval:
             self.angle = random.uniform(0, 2 * math.pi)
             self.direction_timer = 0
-            self.direction_change_interval = random.randint(30, 90)
+            self.direction_change_interval = random.uniform(0.5, 1.5)
 
         vx = self.speed * math.cos(self.angle)
         vy = self.speed * math.sin(self.angle)
 
         flee_dx, flee_dy = self.compute_flee_vector(all_squares)
-        vx = vx + flee_dx * 2
-        vy = vy + flee_dy * 2
+        vx += flee_dx * 200
+        vy += flee_dy * 200
 
-        self.x += vx
-        self.y += vy
+        self.x += vx * dt
+        self.y += vy * dt
 
         if self.x <= 0 or self.x >= SCREEN_WIDTH - self.size:
             self.angle = math.pi - self.angle
@@ -98,7 +100,6 @@ class Square:
         """Draw the square on the screen."""
         pygame.draw.rect(screen, self.color, (self.x, self.y, self.size, self.size))
 
-
 def main():
     """Main game loop."""
     screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
@@ -109,12 +110,14 @@ def main():
 
     running = True
     while running:
+        dt = clock.tick(FPS) / 1000
+        
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
 
         for square in squares:
-            square.update(squares)
+            square.update(squares, dt)
 
         screen.fill(RANDOM_COLOUR)
         for square in squares:
@@ -122,8 +125,6 @@ def main():
 
         screen.blit(fps_surface, (50, 50))
         pygame.display.flip()
-
-        clock.tick(FPS)
     
     pygame.quit()
 

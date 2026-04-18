@@ -68,3 +68,6 @@ Automatically captured prompt log. Entries are appended in chronological order (
 ### 18-04-2026 17:11
 - **Prompt**: acknowledge the switch from frame-based to time-based and please add type hints to the entirety of the file
 
+### 18-04-2026 18:20
+- **Prompt**: regenerate the code explorer site
+

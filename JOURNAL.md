@@ -301,3 +301,14 @@
 - **Hook Version**: 1.02
 - **Date**: 18-04-2026 18:34
 - **Prompt**: acknowledge the life span and rebirth implementation and add type hints where there arent. Then update README.md based on all the updates.
+### **New Interaction**
+- **Agent Version**: 2.2
+- **Date**: 18-04-2026 18:35
+- **User**: kevin.ogbusuo@epita.fr
+- **Prompt**: acknowledge the life span and rebirth implementation and add type hints where there arent. Then update README.md based on all the updates.
+- **CoPilot Mode**: Edit
+- **CoPilot Model**: GPT-5.3-Codex
+- **Socratic Mode**: ON
+- **Changes Made**: Added the remaining type hints in main.py, introduced a typed make_random_colour() helper, and updated README.md to describe time-based motion, flee behavior, lifespan/rebirth, and the current caveat about mutating squares during iteration.
+- **Context and Reasons for Changes**: The code now reflects the time-based simulation and square rebirth behavior, and the README was brought in sync with the current implementation and known limitation.
+

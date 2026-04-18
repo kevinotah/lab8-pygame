@@ -21,7 +21,17 @@ MAX_SIZE: int = 50
 
 WHITE: Tuple[int, int, int] = (255, 255, 255)
 BLACK: Tuple[int, int, int] = (0, 0, 0)
-RANDOM_COLOUR: List[int] = [random.randint(0, 255) for _ in range(3)]
+
+
+def make_random_colour() -> Tuple[int, int, int]:
+    return (
+        random.randint(0, 255),
+        random.randint(0, 255),
+        random.randint(0, 255)
+    )
+
+
+RANDOM_COLOUR: Tuple[int, int, int] = make_random_colour()
 
 
 class Square:
@@ -41,7 +51,7 @@ class Square:
 
         self.angle: float = random.uniform(0, 2 * math.pi)
 
-        self.direction_timer: float = 0
+        self.direction_timer: float = 0.0
         self.direction_change_interval: float = random.uniform(0.5, 1.5)
 
         size_ratio: float = (self.size - MIN_SIZE) / (MAX_SIZE - MIN_SIZE)
@@ -62,6 +72,8 @@ class Square:
         vx: float = self.speed * math.cos(self.angle)
         vy: float = self.speed * math.sin(self.angle)
 
+        flee_dx: float
+        flee_dy: float
         flee_dx, flee_dy = self.compute_flee_vector(all_squares)
         vx += flee_dx * 200
         vy += flee_dy * 200
@@ -79,8 +91,8 @@ class Square:
 
     def compute_flee_vector(self, all_squares: List['Square']) -> Tuple[float, float]:
         """Return a push-away vector from bigger nearby squares."""
-        flee_dx: float = 0
-        flee_dy: float = 0
+        flee_dx: float = 0.0
+        flee_dy: float = 0.0
 
         for other_square in all_squares:
             if other_square is self:
@@ -112,7 +124,7 @@ def main() -> None:
 
     running: bool = True
     while running:
-        dt: float = clock.tick(FPS) / 1000
+        dt: float = clock.tick(FPS) / 1000.0
         
         for event in pygame.event.get():
             if event.type == pygame.QUIT:

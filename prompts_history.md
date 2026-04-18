@@ -80,3 +80,6 @@ Automatically captured prompt log. Entries are appended in chronological order (
 ### 18-04-2026 18:29
 - **Prompt**: some parts of the site has this error:  Syntax error in text mermaid version 11.14.0  Can you fix it
 
+### 18-04-2026 18:34
+- **Prompt**: acknowledge the life span and rebirth implementation and add type hints where there arent. Then update README.md based on all the updates.
+

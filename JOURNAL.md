@@ -296,3 +296,8 @@
 - **Changes Made**: Fixed the Mermaid parse error in docs/code_explorer.html by collapsing the multiline flee-flowchart decision label into a single valid line.
 - **Context and Reasons for Changes**: Mermaid 11 rejects multiline node labels in that flowchart block; the site now renders the diagram without the syntax error.
 
+
+### **New Interaction**
+- **Hook Version**: 1.02
+- **Date**: 18-04-2026 18:34
+- **Prompt**: acknowledge the life span and rebirth implementation and add type hints where there arent. Then update README.md based on all the updates.

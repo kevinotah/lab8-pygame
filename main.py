@@ -46,6 +46,9 @@ class Square:
 
         size_ratio: float = (self.size - MIN_SIZE) / (MAX_SIZE - MIN_SIZE)
         self.speed: float = MAX_SPEED * (1 - size_ratio)
+        
+        self.lifespan: int = random.randint(30, 180)
+        self.certain_variable: float = 0
 
     def update(self, all_squares: List['Square'], dt: float) -> None:
         """Update position and handle bouncing."""
@@ -117,12 +120,20 @@ def main() -> None:
 
         for square in squares:
             square.update(squares, dt)
+            square.certain_variable += dt
 
         screen.fill(RANDOM_COLOUR)
         for square in squares:
-            square.draw(screen)
+            if square.certain_variable < square.lifespan:
+                square.draw(screen)
+            else:
+                squares.remove(square)
+                squares.append(Square())
+        
+        number_of_squares: pygame.Surface = font.render(f"{len(squares)} squares", True, 'Black')
 
         screen.blit(fps_surface, (50, 50))
+        screen.blit(number_of_squares, (50, 100))
         pygame.display.flip()
     
     pygame.quit()

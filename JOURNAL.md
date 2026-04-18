@@ -285,3 +285,14 @@
 - **Hook Version**: 1.02
 - **Date**: 18-04-2026 18:29
 - **Prompt**: some parts of the site has this error:  Syntax error in text mermaid version 11.14.0  Can you fix it
+### **New Interaction**
+- **Agent Version**: 2.2
+- **Date**: 18-04-2026 18:30
+- **User**: kevin.ogbusuo@epita.fr
+- **Prompt**: some parts of the site has this error: Syntax error in text mermaid version 11.14.0 Can you fix it
+- **CoPilot Mode**: Edit
+- **CoPilot Model**: GPT-5.3-Codex
+- **Socratic Mode**: ON
+- **Changes Made**: Fixed the Mermaid parse error in docs/code_explorer.html by collapsing the multiline flee-flowchart decision label into a single valid line.
+- **Context and Reasons for Changes**: Mermaid 11 rejects multiline node labels in that flowchart block; the site now renders the diagram without the syntax error.
+

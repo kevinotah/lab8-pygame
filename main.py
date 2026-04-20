@@ -9,7 +9,7 @@ SCREEN_WIDTH: int = 800
 SCREEN_HEIGHT: int = 600
 FPS: int = 60
 NUM_SQUARES: int = 100
-MAX_SPEED: float = 300
+MAX_SPEED: float = 100
 
 danger_distance: float = 50
 
@@ -77,6 +77,12 @@ class Square:
         flee_dx, flee_dy = self.compute_flee_vector(all_squares)
         vx += flee_dx * 200
         vy += flee_dy * 200
+        
+        chase_dx: float
+        chase_dy: float
+        chase_dx, chase_dy = self.compute_chase_vector(all_squares)
+        vx -= chase_dx * 200
+        vy -= chase_dy * 200
 
         self.x += vx * dt
         self.y += vy * dt
@@ -109,6 +115,27 @@ class Square:
                 flee_dy += away_dy
 
         return flee_dx, flee_dy
+    
+    def compute_chase_vector(self, all_squares: List['Square']) -> Tuple[float, float]:
+        """Return a push-away vector from bigger nearby squares."""
+        chase_dx: float = 0.0
+        chase_dy: float = 0.0
+
+        for other_square in all_squares:
+            if other_square is self:
+                continue
+
+            dx: float = self.x - other_square.x
+            dy: float = self.y - other_square.y
+            distance: float = math.sqrt(dx**2 + dy**2)
+
+            if other_square.size < self.size and distance < danger_distance and distance > 0:
+                away_dx: float = dx / distance
+                away_dy: float = dy / distance
+                chase_dx += away_dx
+                chase_dy += away_dy
+
+        return chase_dx, chase_dy
 
     def draw(self, screen: pygame.Surface) -> None:
         """Draw the square on the screen."""

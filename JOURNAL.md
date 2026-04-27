@@ -317,3 +317,19 @@
 - **Hook Version**: 1.02
 - **Date**: 27-04-2026 14:14
 - **Prompt**: generate the architecture documents for this project
+
+### **New Interaction**
+- **Agent Version**: 2.3
+- **Date**: 27-04-2026 14:16
+- **User**: kevin.ogbusuo@epita.fr
+- **Prompt**: generate the architecture documents for this project
+- **CoPilot Mode**: Agent
+- **CoPilot Model**: Claude Haiku 4.5
+- **Socratic Mode**: ON
+- **Changes Made**: Created docs/architecture.md with 12 comprehensive sections including dependency graphs, high-level system architecture, Square class design, detailed call graphs, sequence diagrams, behavior models, and performance analysis. Created docs/architecture.html as a static, self-contained Mermaid-based documentation site with responsive styling for offline viewing.
+- **Context and Reasons for Changes**: Operating in architecture-graphs mode to produce comprehensive architecture documentation. Generated multiple Mermaid diagrams (dependency graph, system flow, class architecture, call graph, sequence diagram, behavior model, data flow) with proper double-quoted labels per Mermaid 11 standards. Documented the O(n²) complexity, key design decisions, and technology stack. Both .md and .html versions maintain chronological order of concepts and provide clear visual and textual understanding of the pygame simulation.
+
+### **New Interaction**
+- **Hook Version**: 1.02
+- **Date**: 27-04-2026 14:26
+- **Prompt**: generate the flash quiz site for this project

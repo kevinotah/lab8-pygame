@@ -8,7 +8,7 @@ pygame.init()
 SCREEN_WIDTH: int = 800
 SCREEN_HEIGHT: int = 600
 FPS: int = 60
-NUM_SQUARES: int = 100
+NUM_SQUARES: int = 50
 MAX_SPEED: float = 100
 
 danger_distance: float = 50

@@ -1,0 +1,970 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pygame Squares - Project Mastery Study Tool</title>
+    <!-- STUDY_TOOL_TEMPLATE_VERSION: 2.0 -->
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg: #0f1419;
+            --surface: #1a1f2e;
+            --text: #e0e0e0;
+            --text-dark: #b0b0b0;
+            --accent: #00d4ff;
+            --accent-secondary: #ff6b9d;
+            --success: #00d084;
+            --warning: #ffa500;
+            --error: #ff4757;
+            --muted: #404854;
+            --radius: 12px;
+            --shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+        }
+
+        body {
+            font-family: "Avenir Next", "Segoe UI", "Trebuchet MS", sans-serif;
+            background: linear-gradient(135deg, #0f1419 0%, #1a2438 100%);
+            background-attachment: fixed;
+            color: var(--text);
+            line-height: 1.6;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 20% 50%, rgba(0, 212, 255, 0.1) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 80%, rgba(255, 107, 157, 0.1) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        #app {
+            position: relative;
+            z-index: 1;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            animation: slideDown 0.6s ease-out;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            background: linear-gradient(135deg, var(--accent), var(--accent-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+            letter-spacing: 1px;
+        }
+
+        .header p {
+            color: var(--text-dark);
+            font-size: 1.1em;
+        }
+
+        .section {
+            background: var(--surface);
+            border-radius: var(--radius);
+            padding: 40px;
+            margin-bottom: 30px;
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(0, 212, 255, 0.1);
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        .section h2 {
+            color: var(--accent);
+            margin-bottom: 25px;
+            font-size: 1.8em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        #study-summary {
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.1) 0%, rgba(255, 107, 157, 0.1) 100%);
+        }
+
+        #study-summary h3 {
+            color: var(--accent);
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+
+        #study-summary p {
+            color: var(--text-dark);
+            margin-bottom: 12px;
+            line-height: 1.8;
+        }
+
+        #mode-switcher {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .mode-btn {
+            padding: 12px 30px;
+            border: 2px solid var(--muted);
+            background: var(--surface);
+            color: var(--text);
+            cursor: pointer;
+            border-radius: var(--radius);
+            font-size: 1em;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .mode-btn:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        .mode-btn.active {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: var(--bg);
+        }
+
+        #flashcard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .flashcard {
+            height: 250px;
+            perspective: 1000px;
+            cursor: pointer;
+            border-radius: var(--radius);
+            overflow: hidden;
+        }
+
+        .flashcard:focus {
+            outline: 3px solid var(--accent);
+            outline-offset: 2px;
+        }
+
+        .flashcard-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+        }
+
+        .flashcard.is-flipped .flashcard-inner {
+            transform: rotateY(180deg);
+        }
+
+        .flashcard-front,
+        .flashcard-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            box-shadow: var(--shadow);
+        }
+
+        .flashcard-front {
+            background: linear-gradient(135deg, var(--accent) 0%, rgba(0, 212, 255, 0.8) 100%);
+            color: var(--bg);
+        }
+
+        .flashcard-back {
+            background: linear-gradient(135deg, var(--accent-secondary) 0%, rgba(255, 107, 157, 0.8) 100%);
+            color: var(--bg);
+            transform: rotateY(180deg);
+        }
+
+        .flashcard-front h3 {
+            font-size: 1.3em;
+            margin-bottom: 10px;
+        }
+
+        .flashcard-front p {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+
+        .flashcard-back h3 {
+            font-size: 1.1em;
+            margin-bottom: 15px;
+            text-align: left;
+            align-self: flex-start;
+        }
+
+        .flashcard-back p {
+            font-size: 0.95em;
+            text-align: left;
+            line-height: 1.6;
+            overflow-y: auto;
+            max-height: 180px;
+        }
+
+        #quiz-content {
+            margin-bottom: 30px;
+        }
+
+        .question-container {
+            display: none;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .question-container.active {
+            display: block;
+        }
+
+        .question-text {
+            font-size: 1.3em;
+            margin-bottom: 25px;
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        .question-meta {
+            color: var(--text-dark);
+            font-size: 0.9em;
+            margin-bottom: 15px;
+        }
+
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .option {
+            padding: 15px;
+            border: 2px solid var(--muted);
+            background: rgba(0, 212, 255, 0.05);
+            color: var(--text);
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+            text-align: left;
+        }
+
+        .option:hover {
+            border-color: var(--accent);
+            background: rgba(0, 212, 255, 0.1);
+        }
+
+        .option.selected {
+            border-color: var(--accent);
+            background: rgba(0, 212, 255, 0.2);
+        }
+
+        .option.correct {
+            border-color: var(--success);
+            background: rgba(0, 208, 132, 0.2);
+        }
+
+        .option.incorrect {
+            border-color: var(--error);
+            background: rgba(255, 71, 87, 0.2);
+        }
+
+        .quiz-nav {
+            display: flex;
+            gap: 10px;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .quiz-nav-btn {
+            padding: 10px 20px;
+            background: var(--muted);
+            color: var(--text);
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-weight: 600;
+        }
+
+        .quiz-nav-btn:hover:not(:disabled) {
+            background: var(--accent);
+            color: var(--bg);
+        }
+
+        .quiz-nav-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .quiz-progress {
+            color: var(--text-dark);
+            font-weight: 600;
+        }
+
+        #quiz-results {
+            display: none;
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        #quiz-results.show {
+            display: block;
+        }
+
+        .results-container {
+            background: linear-gradient(135deg, rgba(0, 208, 132, 0.1) 0%, rgba(0, 212, 255, 0.1) 100%);
+            padding: 30px;
+            border-radius: var(--radius);
+            border: 2px solid var(--success);
+        }
+
+        .score-display {
+            font-size: 3em;
+            color: var(--success);
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .score-label {
+            text-align: center;
+            color: var(--text-dark);
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+
+        .results-detail {
+            margin-top: 20px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .result-item {
+            padding: 15px;
+            margin-bottom: 12px;
+            border-left: 4px solid var(--muted);
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 4px;
+        }
+
+        .result-item.correct {
+            border-left-color: var(--success);
+        }
+
+        .result-item.incorrect {
+            border-left-color: var(--error);
+        }
+
+        .result-question {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--accent);
+        }
+
+        .result-answer {
+            color: var(--text-dark);
+            font-size: 0.95em;
+            margin-bottom: 5px;
+        }
+
+        .result-explanation {
+            color: var(--text-dark);
+            font-style: italic;
+            font-size: 0.9em;
+            margin-top: 8px;
+            line-height: 1.5;
+        }
+
+        .reset-btn {
+            display: block;
+            margin: 20px auto 0;
+            padding: 12px 40px;
+            background: var(--accent);
+            color: var(--bg);
+            border: none;
+            border-radius: var(--radius);
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1em;
+            transition: all 0.2s ease;
+        }
+
+        .reset-btn:hover {
+            background: var(--accent-secondary);
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8em;
+            }
+
+            .section {
+                padding: 20px;
+            }
+
+            #flashcard-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .flashcard {
+                height: 300px;
+            }
+
+            .quiz-nav {
+                justify-content: center;
+            }
+
+            .score-display {
+                font-size: 2em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <main id="app">
+        <div class="header">
+            <h1>🎮 Pygame Squares - Project Mastery</h1>
+            <p>Interactive flashcards and quiz to master the simulation</p>
+        </div>
+
+        <section id="study-summary" class="section">
+            <h2>📚 Study Summary</h2>
+            <h3>Project Overview</h3>
+            <p>This pygame project implements a dynamic square simulation with 50 animated entities that exhibit predator-prey behavior. Smaller squares flee from larger ones, while larger squares chase smaller ones—all within a time-based physics system.</p>
+            <h3>Core Concepts Covered</h3>
+            <p>• <strong>Object-Oriented Design:</strong> Square class with state management and behavior methods</p>
+            <p>• <strong>Game Loop Architecture:</strong> Event handling, physics updates, rendering pipeline</p>
+            <p>• <strong>Time-Based Physics:</strong> Delta-time integration for frame-rate-independent movement</p>
+            <p>• <strong>Vector Math:</strong> Trigonometric calculations for direction and distance</p>
+            <p>• <strong>Behavioral AI:</strong> Flee and chase logic based on size and proximity</p>
+            <p>• <strong>Entity Lifecycle:</strong> Lifespan-based respawning and state recycling</p>
+            <p>• <strong>Type Safety:</strong> Comprehensive type hints throughout the codebase</p>
+        </section>
+
+        <section id="mode-switcher" class="section">
+            <button class="mode-btn active" id="flashcard-mode-btn">📇 Flashcards</button>
+            <button class="mode-btn" id="quiz-mode-btn">✅ Quiz (15 Questions)</button>
+        </section>
+
+        <section id="flashcards" class="section">
+            <h2>📇 Concept Flashcards</h2>
+            <div id="flashcard-grid"></div>
+        </section>
+
+        <section id="quiz" class="section">
+            <h2>✅ Knowledge Quiz</h2>
+            <div id="quiz-content"></div>
+            <div class="quiz-nav"></div>
+            <div id="quiz-results"></div>
+        </section>
+    </main>
+
+    <script>
+        // ========== DATA DEFINITIONS ==========
+        const flashcards = [
+            {
+                front: "Square Initialization",
+                back: "Each square starts with: random size (10-50px), random position on screen, random RGB color, random angle (0-2π), and speed derived from size (larger = slower). See main.py:__init__"
+            },
+            {
+                front: "Time-Based Movement",
+                back: "Position update uses dt (delta time in seconds): new_x = x + vx * dt. This makes movement frame-rate independent. See main.py:update() line ~46"
+            },
+            {
+                front: "Direction Timer Pattern",
+                back: "direction_timer accumulates dt each frame. When it exceeds direction_change_interval (0.5-1.5s), angle randomizes and timer resets. See main.py:update() line ~32"
+            },
+            {
+                front: "Flee Vector Computation",
+                back: "compute_flee_vector() iterates all squares, finds those larger than self within danger_distance (50px), normalizes dx/dy vectors away from them, and sums. See main.py:compute_flee_vector()"
+            },
+            {
+                front: "Chase Vector Computation",
+                back: "compute_chase_vector() mirrors flee logic but targets squares smaller than self. Returns normalized vectors toward prey. See main.py:compute_chase_vector()"
+            },
+            {
+                front: "Velocity Combination",
+                back: "Base velocity from angle + (flee_dx * 200) + (chase_dx * 200). The 200x scaling makes behavioral vectors dominate random movement. See main.py:update() line ~48-54"
+            },
+            {
+                front: "Boundary Collision",
+                back: "If x ≤ 0 or x ≥ SCREEN_WIDTH-size, bounce: angle = π - angle (horizontal reflection). Similar for y. Clamp position to bounds. See main.py:update() line ~56-62"
+            },
+            {
+                front: "Lifespan & Rebirth",
+                back: "certain_variable accumulates dt each frame. When it exceeds lifespan (30-180 frames), square is removed from list and new Square() appended. See main.py:main() line ~87-90"
+            },
+            {
+                front: "Speed-Size Relationship",
+                back: "size_ratio = (size - MIN_SIZE) / (MAX_SIZE - MIN_SIZE). speed = MAX_SPEED * (1 - size_ratio). Larger squares move slower. See main.py:__init__ line ~19-20"
+            },
+            {
+                front: "Rendering Pipeline",
+                back: "Each frame: fill screen, loop all squares, check if certain_variable < lifespan, draw active squares as pygame.draw.rect(), flip display. See main.py:main() line ~80-91"
+            },
+            {
+                front: "Type Hints Purpose",
+                back: "Type hints document parameter and return types (e.g., def update(self, all_squares: List['Square'], dt: float) -> None). Enable IDE autocompletion and catch type errors. See main.py lines ~2-6"
+            },
+            {
+                front: "Game Loop Phases",
+                back: "Each iteration: (1) tick clock for dt, (2) poll events, (3) update all squares, (4) render, (5) check lifespan/respawn. 60 FPS target. See main.py:main() line ~74-91"
+            },
+            {
+                front: "O(n²) Complexity",
+                back: "Each square's update() iterates all n squares for flee/chase checks. Total: ~2,500 distance checks per frame (50²) at 60 FPS. Opportunity: spatial partitioning (quadtree) → O(n log n)"
+            },
+            {
+                front: "Flee vs Chase Trade-off",
+                back: "Flee from larger (survival instinct), chase smaller (growth instinct). Both scaled by 200. Creates emergent predator-prey dynamics without explicit rules. See main.py:compute_flee_vector() and compute_chase_vector()"
+            },
+            {
+                front: "Distance Calculation",
+                back: "distance = sqrt(dx² + dy²) where dx = self.x - other.x, dy = self.y - other.y. Compared against danger_distance (50px) to trigger flee/chase. See main.py:compute_flee_vector() line ~65"
+            }
+        ];
+
+        const quizData = [
+            {
+                question: "In main.py, the Square.__init__ method sets self.speed based on a size_ratio. What is the mathematical relationship between square size and speed?",
+                options: [
+                    "Larger squares move faster",
+                    "Larger squares move slower (speed = MAX_SPEED × (1 - size_ratio))",
+                    "Size and speed are unrelated",
+                    "Speed increases exponentially with size"
+                ],
+                correct: 1,
+                explanation: "The code calculates size_ratio = (self.size - MIN_SIZE) / (MAX_SIZE - MIN_SIZE), then speed = MAX_SPEED * (1 - size_ratio). This means larger squares get a smaller multiplier and move slower, simulating weight/inertia."
+            },
+            {
+                question: "What is the purpose of the direction_timer and direction_change_interval in main.py?",
+                options: [
+                    "To track how long a square has been on screen",
+                    "To gradually fade the square's color over time",
+                    "To periodically randomize movement direction every 0.5-1.5 seconds",
+                    "To measure the square's lifespan before respawn"
+                ],
+                correct: 2,
+                explanation: "direction_timer accumulates dt each frame. When it reaches direction_change_interval (random 0.5-1.5s), the angle is randomized and timer resets. This creates natural variation in movement without complete randomness."
+            },
+            {
+                question: "In compute_flee_vector(), why does the code check `if other_square.size > self.size`?",
+                options: [
+                    "To only flee from squares that are bigger (predators)",
+                    "To optimize by skipping unnecessary comparisons",
+                    "To prevent infinite loops",
+                    "To make the function symmetric with compute_chase_vector()"
+                ],
+                correct: 0,
+                explanation: "compute_flee_vector() models survival: a square only flees from threats (larger squares). compute_chase_vector() does the opposite—chasing smaller prey. This creates the predator-prey dynamic."
+            },
+            {
+                question: "What does the max(0, min(SCREEN_WIDTH - self.size, self.x)) operation accomplish?",
+                options: [
+                    "Calculates the maximum distance the square can travel",
+                    "Clamps the position to stay within screen bounds and prevents rendering off-screen",
+                    "Selects the smallest valid x coordinate",
+                    "Compares the square's size to screen width"
+                ],
+                correct: 1,
+                explanation: "This is a clamping operation: max(...) ensures the result is at least 0, min(...) ensures it doesn't exceed SCREEN_WIDTH - size. Together they keep the square visible within bounds."
+            },
+            {
+                question: "In the update() method, velocity is modified by flee and chase vectors, both scaled by 200. Why this specific scaling factor?",
+                options: [
+                    "It's arbitrary and chosen randomly each frame",
+                    "To make behavior-driven vectors dominate over base random movement",
+                    "To match the screen dimensions in pixels",
+                    "To synchronize with the 60 FPS frame rate"
+                ],
+                correct: 1,
+                explanation: "Base velocity has magnitude ~100 (MAX_SPEED). Scaling flee/chase by 200 makes these behavioral forces much stronger, so intelligent behavior overrides random wandering. Without this scaling, squares would move mostly randomly."
+            },
+            {
+                question: "What is the significance of the `certain_variable` accumulating dt in main.py:main()?",
+                options: [
+                    "It measures total time elapsed since game start",
+                    "It tracks how long a square has existed and triggers respawn when > lifespan",
+                    "It's a debug variable with no functional purpose",
+                    "It controls the frame rate timing"
+                ],
+                correct: 1,
+                explanation: "Each frame, certain_variable += dt. When it exceeds the square's lifespan (30-180 frames), the square is removed and a new one appended. This implements entity recycling without memory leaks."
+            },
+            {
+                question: "Why does the code use `if other_square is self: continue` in compute_flee_vector()?",
+                options: [
+                    "To prevent the square from calculating distance to itself (which would be 0)",
+                    "To optimize performance by skipping the comparison",
+                    "To avoid modifying other_square during iteration",
+                    "To check if two squares have the same color"
+                ],
+                correct: 0,
+                explanation: "If a square calculated distance to itself, distance would always be 0, triggering spurious flee/chase behavior. The identity check prevents this by skipping self-comparison."
+            },
+            {
+                question: "In the game loop (main.py:main()), what does `dt = clock.tick(FPS) / 1000.0` compute?",
+                options: [
+                    "Frames per second",
+                    "Delta time in seconds (milliseconds from last frame / 1000)",
+                    "Total time since game started",
+                    "Screen refresh rate"
+                ],
+                correct: 1,
+                explanation: "clock.tick(60) returns milliseconds since last tick. Dividing by 1000 converts to seconds (dt). Position updates use dt to scale velocity: new_pos = old_pos + velocity * dt."
+            },
+            {
+                question: "What is the time complexity of updating all 50 squares' flee/chase logic?",
+                options: [
+                    "O(n) where n=50",
+                    "O(n²) where n=50 (~2,500 distance checks per frame)",
+                    "O(log n)",
+                    "O(n³)"
+                ],
+                correct: 1,
+                explanation: "Each of 50 squares iterates the other ~50 to compute flee/chase vectors. That's 50×50=2,500 distance calculations per frame at 60 FPS. Spatial partitioning (quadtree) could reduce this to O(n log n)."
+            },
+            {
+                question: "Why is `all_squares` passed to the update() method instead of accessed globally?",
+                options: [
+                    "To make the method testable and avoid global state coupling",
+                    "To satisfy Python syntax requirements",
+                    "To improve rendering performance",
+                    "To enable squares to modify the main list directly"
+                ],
+                correct: 0,
+                explanation: "Passing all_squares as a parameter makes the Square class more modular and testable. It avoids tight coupling to global state and makes the dependency explicit in the method signature."
+            },
+            {
+                question: "In compute_flee_vector(), after finding the direction away (away_dx, away_dy), why normalize the vector (divide by distance)?",
+                options: [
+                    "To make all flee vectors the same magnitude (unit vectors)",
+                    "To save memory",
+                    "To prevent division by zero later",
+                    "To slow down the square's escape"
+                ],
+                correct: 0,
+                explanation: "Normalizing converts the raw (dx, dy) difference into a unit vector (magnitude=1) pointing away from the threat. This makes all flee directions equally strong, regardless of distance. They're then scaled by 200 in update()."
+            },
+            {
+                question: "If a square hits the left wall (x ≤ 0), how does the bounce physics work?",
+                options: [
+                    "angle = 0 (square stops moving)",
+                    "angle = π - angle (horizontal reflection, like a mirror)",
+                    "angle = -angle (vertical reflection)",
+                    "angle randomizes completely"
+                ],
+                correct: 1,
+                explanation: "angle = π - angle reflects the angle across a vertical axis, simulating a bounce off the left/right wall. For example, 45° becomes 135°. For top/bottom walls, angle = -angle (vertical reflection)."
+            },
+            {
+                question: "What advantage does time-based movement (using dt) provide over frame-based movement?",
+                options: [
+                    "It makes the code shorter",
+                    "Frame rate independent: squares move the same distance per second regardless of FPS",
+                    "It eliminates the need for a game clock",
+                    "It reduces memory usage"
+                ],
+                correct: 1,
+                explanation: "Frame-based: position += velocity per frame (varies if FPS drops). Time-based: position += velocity * dt (constant per second). If FPS drops from 60 to 30, dt doubles but frame count halves—distance traveled stays the same."
+            },
+            {
+                question: "Why does the main() function create a new Square() and append it instead of reusing existing instances when lifespan expires?",
+                options: [
+                    "To avoid attribute errors from stale state",
+                    "To recycle memory and simplify lifecycle management",
+                    "Because Python requires new objects",
+                    "To change colors dynamically"
+                ],
+                correct: 1,
+                explanation: "Creating fresh Square() instances ensures clean, randomized state (new size, position, color, speed). It's simpler than manually resetting each attribute and avoids bugs from stale state."
+            }
+        ];
+
+        // ========== STATE ==========
+        let currentMode = 'flashcard'; // 'flashcard' or 'quiz'
+        let currentQuestion = 0;
+        let userAnswers = [];
+        let quizSubmitted = false;
+
+        // ========== DOM HELPERS ==========
+        function getElement(id) {
+            return document.getElementById(id);
+        }
+
+        function show(element) {
+            element.style.display = 'block';
+        }
+
+        function hide(element) {
+            element.style.display = 'none';
+        }
+
+        // ========== FLASHCARD MODE ==========
+        function initFlashcards() {
+            const grid = getElement('flashcard-grid');
+            grid.innerHTML = '';
+            
+            flashcards.forEach((card, index) => {
+                const cardEl = document.createElement('div');
+                cardEl.className = 'flashcard';
+                cardEl.tabindex = 0;
+                cardEl.role = 'button';
+                cardEl.innerHTML = `
+                    <div class="flashcard-inner">
+                        <div class="flashcard-front">
+                            <h3>Concept ${index + 1}</h3>
+                            <p>${card.front}</p>
+                        </div>
+                        <div class="flashcard-back">
+                            <h3>${card.front}</h3>
+                            <p>${card.back}</p>
+                        </div>
+                    </div>
+                `;
+                
+                cardEl.addEventListener('click', () => cardEl.classList.toggle('is-flipped'));
+                cardEl.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        cardEl.classList.toggle('is-flipped');
+                    }
+                });
+                
+                grid.appendChild(cardEl);
+            });
+        }
+
+        // ========== QUIZ MODE ==========
+        function initQuizDOM() {
+            const quizContent = getElement('quiz-content');
+            quizContent.innerHTML = '';
+            
+            quizData.forEach((q, idx) => {
+                const container = document.createElement('div');
+                container.className = 'question-container';
+                container.id = `q-${idx}`;
+                container.innerHTML = `
+                    <div class="question-meta">Question ${idx + 1} of ${quizData.length}</div>
+                    <div class="question-text">${q.question}</div>
+                    <div class="options">
+                        ${q.options.map((opt, optIdx) => `
+                            <div class="option" data-index="${optIdx}">${opt}</div>
+                        `).join('')}
+                    </div>
+                `;
+                quizContent.appendChild(container);
+            });
+            
+            updateQuizNav();
+        }
+
+        function updateQuizNav() {
+            const navEl = document.querySelector('.quiz-nav');
+            navEl.innerHTML = `
+                <button class="quiz-nav-btn" id="prev-btn" ${currentQuestion === 0 ? 'disabled' : ''}>← Previous</button>
+                <span class="quiz-progress">${currentQuestion + 1} / ${quizData.length}</span>
+                <button class="quiz-nav-btn" id="next-btn" ${currentQuestion === quizData.length - 1 ? 'disabled' : ''}>Next →</button>
+                ${currentQuestion === quizData.length - 1 ? '<button class="quiz-nav-btn" id="submit-btn" style="background: var(--success); color: var(--bg);">Submit Quiz</button>' : ''}
+            `;
+            
+            getElement('prev-btn')?.addEventListener('click', prevQuestion);
+            getElement('next-btn')?.addEventListener('click', nextQuestion);
+            getElement('submit-btn')?.addEventListener('click', submitQuiz);
+        }
+
+        function showQuestion(index) {
+            document.querySelectorAll('.question-container').forEach(q => q.classList.remove('active'));
+            const q = getElement(`q-${index}`);
+            if (q) q.classList.add('active');
+            
+            const options = q.querySelectorAll('.option');
+            options.forEach((opt, idx) => {
+                opt.classList.remove('selected', 'correct', 'incorrect');
+                if (userAnswers[index] === idx) {
+                    opt.classList.add('selected');
+                }
+                opt.addEventListener('click', () => selectOption(index, idx));
+            });
+        }
+
+        function selectOption(qIndex, optIndex) {
+            userAnswers[qIndex] = optIndex;
+            showQuestion(qIndex);
+        }
+
+        function nextQuestion() {
+            if (currentQuestion < quizData.length - 1) {
+                currentQuestion++;
+                showQuestion(currentQuestion);
+                updateQuizNav();
+            }
+        }
+
+        function prevQuestion() {
+            if (currentQuestion > 0) {
+                currentQuestion--;
+                showQuestion(currentQuestion);
+                updateQuizNav();
+            }
+        }
+
+        function submitQuiz() {
+            quizSubmitted = true;
+            let score = 0;
+            
+            quizData.forEach((q, idx) => {
+                if (userAnswers[idx] === q.correct) score++;
+            });
+            
+            const resultsEl = getElement('quiz-results');
+            resultsEl.classList.add('show');
+            
+            const resultHTML = `
+                <div class="results-container">
+                    <div class="score-display">${score}/${quizData.length}</div>
+                    <div class="score-label">Your Score: ${Math.round(score/quizData.length*100)}%</div>
+                    <div class="results-detail">
+                        ${quizData.map((q, idx) => {
+                            const isCorrect = userAnswers[idx] === q.correct;
+                            const userChoice = q.options[userAnswers[idx]];
+                            const correctChoice = q.options[q.correct];
+                            return `
+                                <div class="result-item ${isCorrect ? 'correct' : 'incorrect'}">
+                                    <div class="result-question">Q${idx + 1}: ${isCorrect ? '✓' : '✗'}</div>
+                                    <div class="result-answer"><strong>Your answer:</strong> ${userChoice || 'Not answered'}</div>
+                                    ${!isCorrect ? `<div class="result-answer"><strong>Correct answer:</strong> ${correctChoice}</div>` : ''}
+                                    <div class="result-explanation">${q.explanation}</div>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                    <button class="reset-btn" onclick="resetQuiz()">Retake Quiz</button>
+                </div>
+            `;
+            
+            resultsEl.innerHTML = resultHTML;
+            hide(getElement('quiz-content'));
+            document.querySelector('.quiz-nav').innerHTML = '';
+        }
+
+        function resetQuiz() {
+            currentQuestion = 0;
+            userAnswers = [];
+            quizSubmitted = false;
+            getElement('quiz-results').classList.remove('show');
+            show(getElement('quiz-content'));
+            initQuizDOM();
+            showQuestion(0);
+        }
+
+        // ========== MODE SWITCHING ==========
+        function switchMode(mode) {
+            currentMode = mode;
+            
+            document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(mode + '-mode-btn').classList.add('active');
+            
+            if (mode === 'flashcard') {
+                show(getElement('flashcards'));
+                hide(getElement('quiz'));
+            } else {
+                hide(getElement('flashcards'));
+                show(getElement('quiz'));
+                if (userAnswers.length === 0) {
+                    initQuizDOM();
+                    showQuestion(0);
+                }
+            }
+        }
+
+        // ========== INITIALIZATION ==========
+        function init() {
+            initFlashcards();
+            initQuizDOM();
+            showQuestion(0);
+            
+            getElement('flashcard-mode-btn').addEventListener('click', () => switchMode('flashcard'));
+            getElement('quiz-mode-btn').addEventListener('click', () => switchMode('quiz'));
+        }
+
+        // ========== DOM VALIDATION ==========
+        function validateDOM() {
+            const required = [
+                '#flashcard-grid',
+                '#quiz-content',
+                '.quiz-nav',
+                '#quiz-results'
+            ];
+            
+            const missing = required.filter(sel => !document.querySelector(sel));
+            if (missing.length > 0) {
+                console.error('Missing required elements:', missing);
+                return false;
+            }
+            
+            const flashcardCount = document.querySelectorAll('.flashcard').length;
+            if (flashcardCount !== 15) {
+                console.error(`Expected 15 flashcards, found ${flashcardCount}`);
+                return false;
+            }
+            
+            const questionCount = document.querySelectorAll('.question-container').length;
+            if (questionCount !== 15) {
+                console.error(`Expected 15 questions, found ${questionCount}`);
+                return false;
+            }
+            
+            console.log('✓ DOM validation passed: 15 flashcards, 15 quiz questions');
+            return true;
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            init();
+            validateDOM();
+        });
+    </script>
+</body>
+</html>

@@ -370,3 +370,14 @@
 - **Hook Version**: 1.02
 - **Date**: 27-04-2026 14:52
 - **Prompt**: implement the refactoring plan in refactoring.plan.md
+
+### **New Interaction**
+- **Agent Version**: 2.3
+- **Date**: 27-04-2026 14:55
+- **User**: kevin.ogbusuo@epita.fr
+- **Prompt**: implement the refactoring plan in refactoring.plan.md
+- **CoPilot Mode**: Agent
+- **CoPilot Model**: GPT-5.4 mini
+- **Socratic Mode**: ON
+- **Changes Made**: Updated main.py to rename the lifespan counter to age, extracted flee/chase scaling constants, corrected the chase docstring, renamed normalized vector components for clarity, and rewrote the velocity/boundary logic with clearer intermediate variables and comments.
+- **Context and Reasons for Changes**: Implemented the light refactoring plan to make the pygame simulation easier to read for first-year CS students without changing runtime behavior. Validation on main.py passed with no errors after the edit.

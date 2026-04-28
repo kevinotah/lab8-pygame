@@ -10,6 +10,8 @@ SCREEN_HEIGHT: int = 600
 FPS: int = 60
 NUM_SQUARES: int = 50
 MAX_SPEED: float = 100
+FLEE_SCALE: float = 200
+CHASE_SCALE: float = 200
 
 danger_distance: float = 50
 
@@ -58,7 +60,7 @@ class Square:
         self.speed: float = MAX_SPEED * (1 - size_ratio)
         
         self.lifespan: int = random.randint(30, 180)
-        self.certain_variable: float = 0
+        self.age: float = 0.0
 
     def update(self, all_squares: List['Square'], dt: float) -> None:
         """Update position and handle bouncing."""
@@ -69,30 +71,35 @@ class Square:
             self.direction_timer = 0
             self.direction_change_interval = random.uniform(0.5, 1.5)
 
-        vx: float = self.speed * math.cos(self.angle)
-        vy: float = self.speed * math.sin(self.angle)
+        base_vx: float = self.speed * math.cos(self.angle)
+        base_vy: float = self.speed * math.sin(self.angle)
 
         flee_dx: float
         flee_dy: float
         flee_dx, flee_dy = self.compute_flee_vector(all_squares)
-        vx += flee_dx * 200
-        vy += flee_dy * 200
+        flee_vx: float = flee_dx * FLEE_SCALE
+        flee_vy: float = flee_dy * FLEE_SCALE
         
         chase_dx: float
         chase_dy: float
         chase_dx, chase_dy = self.compute_chase_vector(all_squares)
-        vx -= chase_dx * 200
-        vy -= chase_dy * 200
+        chase_vx: float = chase_dx * CHASE_SCALE
+        chase_vy: float = chase_dy * CHASE_SCALE
+
+        vx: float = base_vx + flee_vx - chase_vx
+        vy: float = base_vy + flee_vy - chase_vy
 
         self.x += vx * dt
         self.y += vy * dt
 
         if self.x <= 0 or self.x >= SCREEN_WIDTH - self.size:
             self.angle = math.pi - self.angle
+            # Clamp position so the square stays fully visible after bouncing.
             self.x = max(0, min(SCREEN_WIDTH - self.size, self.x))
 
         if self.y <= 0 or self.y >= SCREEN_HEIGHT - self.size:
             self.angle = -self.angle
+            # Clamp position so the square stays fully visible after bouncing.
             self.y = max(0, min(SCREEN_HEIGHT - self.size, self.y))
 
     def compute_flee_vector(self, all_squares: List['Square']) -> Tuple[float, float]:
@@ -109,15 +116,15 @@ class Square:
             distance: float = math.sqrt(dx**2 + dy**2)
 
             if other_square.size > self.size and distance < danger_distance and distance > 0:
-                away_dx: float = dx / distance
-                away_dy: float = dy / distance
-                flee_dx += away_dx
-                flee_dy += away_dy
+                direction_x: float = dx / distance
+                direction_y: float = dy / distance
+                flee_dx += direction_x
+                flee_dy += direction_y
 
         return flee_dx, flee_dy
     
     def compute_chase_vector(self, all_squares: List['Square']) -> Tuple[float, float]:
-        """Return a push-away vector from bigger nearby squares."""
+        """Return a move-toward vector for smaller nearby squares."""
         chase_dx: float = 0.0
         chase_dy: float = 0.0
 
@@ -130,10 +137,10 @@ class Square:
             distance: float = math.sqrt(dx**2 + dy**2)
 
             if other_square.size < self.size and distance < danger_distance and distance > 0:
-                away_dx: float = dx / distance
-                away_dy: float = dy / distance
-                chase_dx += away_dx
-                chase_dy += away_dy
+                direction_x: float = dx / distance
+                direction_y: float = dy / distance
+                chase_dx += direction_x
+                chase_dy += direction_y
 
         return chase_dx, chase_dy
 
@@ -159,11 +166,11 @@ def main() -> None:
 
         for square in squares:
             square.update(squares, dt)
-            square.certain_variable += dt
+            square.age += dt
 
         screen.fill(RANDOM_COLOUR)
         for square in squares:
-            if square.certain_variable < square.lifespan:
+            if square.age < square.lifespan:
                 square.draw(screen)
             else:
                 squares.remove(square)

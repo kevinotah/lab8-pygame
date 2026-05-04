@@ -19,6 +19,7 @@ font: pygame.font.Font = pygame.font.Font(None, 30)
 
 MIN_SIZE: int = 4
 MAX_SIZE: int = 25
+MAX_GROWTH_SIZE = 50
 
 WHITE: Tuple[int, int, int] = (255, 255, 255)
 BLACK: Tuple[int, int, int] = (0, 0, 0)
@@ -103,7 +104,15 @@ class Square:
         if self.y < 0:
             self.y = SCREEN_HEIGHT - self.size
         elif self.y > SCREEN_HEIGHT - self.size:
-            self.y = 0            
+            self.y = 0
+        
+        for square in all_squares:
+            if square is self:
+                continue
+            else:
+                if self._check_collision(square) and self.size > square.size and self.size < MAX_GROWTH_SIZE:
+                    square.lifespan = 0
+                    self.size *= 1 + (square.size/MAX_SIZE)
         
 
     def compute_flee_vector(self, all_squares: List['Square']) -> Tuple[float, float]:
@@ -205,7 +214,7 @@ def main() -> None:
             if square.age < square.lifespan:
                 new_squares.append(square)
             else:
-                new_squares.append(Square(square.size))
+                new_squares.append(Square(int(square.size)))
                 # q2 was done together with q1
 
         squares = new_squares

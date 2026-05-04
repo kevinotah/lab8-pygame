@@ -25,7 +25,7 @@ WHITE: Tuple[int, int, int] = (255, 255, 255)
 BLACK: Tuple[int, int, int] = (0, 0, 0)
 
 TRAILS_LENGTH = 30
-
+GROWTH_SPEED = 500
 
 def make_random_colour() -> Tuple[int, int, int]:
     # Return one RGB background color and keep it fixed for the whole run.

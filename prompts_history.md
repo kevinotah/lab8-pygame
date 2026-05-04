@@ -98,3 +98,6 @@ Automatically captured prompt log. Entries are appended in chronological order (
 ### 04-05-2026 07:19
 - **Prompt**: regenerate the architecture documents for this project
 
+### 04-05-2026 07:24
+- **Prompt**: regenerate the flash quiz site for this project
+

@@ -386,3 +386,19 @@
 - **Hook Version**: 1.02
 - **Date**: 04-05-2026 07:19
 - **Prompt**: regenerate the architecture documents for this project
+
+### **New Interaction**
+- **Agent Version**: 2.3
+- **Date**: 04-05-2026 07:21
+- **User**: kevin.ogbusuo@epita.fr
+- **Prompt**: regenerate the architecture documents for this project
+- **CoPilot Mode**: Agent
+- **CoPilot Model**: GPT-5.3-Codex
+- **Socratic Mode**: ON
+- **Changes Made**: Regenerated docs/architecture.md and docs/architecture.html to match the current single-module pygame implementation and refreshed all Mermaid diagrams.
+- **Context and Reasons for Changes**: Existing architecture documentation was stale and had mismatches with live constants and runtime behavior. Updated docs now reflect actual control flow, function calls, and lifecycle behavior in main.py.
+
+### **New Interaction**
+- **Hook Version**: 1.02
+- **Date**: 04-05-2026 07:24
+- **Prompt**: regenerate the flash quiz site for this project

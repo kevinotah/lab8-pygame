@@ -9,7 +9,7 @@ pygame.init()
 SCREEN_WIDTH: int = 800
 SCREEN_HEIGHT: int = 600
 FPS: int = 60
-NUM_SQUARES: int = 50
+# NUM_SQUARES: int = 50
 MAX_SPEED: float = 120
 
 # Squares react to nearby larger/smaller squares only within this radius.
@@ -17,8 +17,8 @@ DANGER_DISTANCE: float = 80
 
 font: pygame.font.Font = pygame.font.Font(None, 30)
 
-MIN_SIZE: int = 10
-MAX_SIZE: int = 50
+MIN_SIZE: int = 4
+MAX_SIZE: int = 25
 
 WHITE: Tuple[int, int, int] = (255, 255, 255)
 BLACK: Tuple[int, int, int] = (0, 0, 0)
@@ -38,9 +38,10 @@ RANDOM_COLOUR: Tuple[int, int, int] = make_random_colour()
 
 
 class Square:
-    def __init__(self) -> None:
+    def __init__(self, size: int) -> None:
         # Each square gets a random size, position, color, direction, and lifespan.
-        self.size: int = random.randint(MIN_SIZE, MAX_SIZE)
+        # self.size: int = random.randint(MIN_SIZE, MAX_SIZE)
+        self.size = size
 
         self.x: float = random.randint(0, SCREEN_WIDTH - self.size)
         self.y: float = random.randint(0, SCREEN_HEIGHT - self.size)
@@ -159,8 +160,11 @@ def main() -> None:
     pygame.display.set_caption("Smooth Squares")
     clock: pygame.time.Clock = pygame.time.Clock()
 
-    # Start with a fixed number of squares.
-    squares: List[Square] = [Square() for _ in range(NUM_SQUARES)]
+    # Start with different sizes of squares
+    squares: List[Square] = []
+    for _ in range(5): squares.append(Square(25))
+    for _ in range(10): squares.append(Square(10))
+    for _ in range(30): squares.append(Square(4))
 
     running: bool = True
     while running:
@@ -192,7 +196,7 @@ def main() -> None:
             if square.age < square.lifespan:
                 new_squares.append(square)
             else:
-                new_squares.append(Square())
+                new_squares.append(Square(square.size))
 
         squares = new_squares
         

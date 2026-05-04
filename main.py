@@ -155,6 +155,12 @@ class Square:
     def draw(self, screen: pygame.Surface) -> None:
         # Draw the square as a filled rectangle at its current position.
         pygame.draw.rect(screen, self.color, (self.x, self.y, self.size, self.size))
+        
+    def _check_collision(self, other) -> bool:
+        self = pygame.Rect(self.x, self.y, self.size, self.size)
+        other = pygame.Rect(other.x, other.y, other.size, other.size)
+        collision: bool = self.colliderect(other)
+        return collision
 
 
 def main() -> None:

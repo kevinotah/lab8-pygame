@@ -8,20 +8,16 @@ pygame.init()
 SCREEN_WIDTH: int = 800
 SCREEN_HEIGHT: int = 600
 FPS: int = 60
-
 NUM_SQUARES: int = 50
+MAX_SPEED: float = 120
+
+DANGER_DISTANCE: float = 80
+
+font: pygame.font.Font = pygame.font.Font(None, 50)
+fps_surface: pygame.Surface = font.render(f"{FPS} FPS", True, 'Black')
 
 MIN_SIZE: int = 10
 MAX_SIZE: int = 50
-
-MAX_SPEED: float = 120.0
-MIN_SPEED: float = 40.0
-
-FLEE_FORCE: float = 200.0
-CHASE_FORCE: float = 400.0
-
-DANGER_DISTANCE: float = 50.0
-DANGER_DISTANCE_SQ: float = DANGER_DISTANCE ** 2
 
 WHITE: Tuple[int, int, int] = (255, 255, 255)
 BLACK: Tuple[int, int, int] = (0, 0, 0)
@@ -31,124 +27,117 @@ def make_random_colour() -> Tuple[int, int, int]:
     return (
         random.randint(0, 255),
         random.randint(0, 255),
-        random.randint(0, 255),
+        random.randint(0, 255)
     )
 
 
-BACKGROUND_COLOR: Tuple[int, int, int] = make_random_colour()
-
-font: pygame.font.Font = pygame.font.Font(None, 40)
-
-
-def normalize(dx: float, dy: float) -> Tuple[float, float]:
-    length: float = math.sqrt(dx * dx + dy * dy)
-    if length == 0:
-        return 0.0, 0.0
-    return dx / length, dy / length
-
-
-def clamp_velocity(vx: float, vy: float, max_speed: float) -> Tuple[float, float]:
-    speed: float = math.sqrt(vx * vx + vy * vy)
-    if speed > max_speed:
-        scale: float = max_speed / speed
-        return vx * scale, vy * scale
-    return vx, vy
+RANDOM_COLOUR: Tuple[int, int, int] = make_random_colour()
 
 
 class Square:
     def __init__(self) -> None:
         self.size: int = random.randint(MIN_SIZE, MAX_SIZE)
 
-        self.x: float = random.uniform(0, SCREEN_WIDTH - self.size)
-        self.y: float = random.uniform(0, SCREEN_HEIGHT - self.size)
-
-        self.vx: float = random.uniform(-1, 1)
-        self.vy: float = random.uniform(-1, 1)
-        self.vx, self.vy = normalize(self.vx, self.vy)
-
-        initial_speed: float = random.uniform(40.0, MAX_SPEED)
-        self.vx *= initial_speed
-        self.vy *= initial_speed
+        self.x: float = random.randint(0, SCREEN_WIDTH - self.size)
+        self.y: float = random.randint(0, SCREEN_HEIGHT - self.size)
 
         self.color: Tuple[int, int, int] = (
             random.randint(50, 255),
             random.randint(50, 255),
-            random.randint(50, 255),
+            random.randint(50, 255)
         )
 
-        size_ratio: float = (self.size - MIN_SIZE) / (MAX_SIZE - MIN_SIZE)
-        self.max_speed: float = MIN_SPEED + (MAX_SPEED - MIN_SPEED) * (1 - size_ratio)
+        self.angle: float = random.uniform(0, 2 * math.pi)
 
-        self.lifespan: float = random.uniform(30, 180)
+        self.direction_timer: float = 0.0
+        self.direction_change_interval: float = random.uniform(0.8, 2.0)
+
+        size_ratio: float = (self.size - MIN_SIZE) / (MAX_SIZE - MIN_SIZE)
+        self.speed: float = MAX_SPEED * (1 - size_ratio)
+
+        self.lifespan: int = random.randint(30, 180)
         self.age: float = 0.0
 
-    def compute_interaction(self, squares: List["Square"]) -> Tuple[float, float]:
-        force_x: float = 0.0
-        force_y: float = 0.0
+    def update(self, all_squares: List['Square'], dt: float) -> None:
 
-        size_factor: float = self.size / MAX_SIZE
+        self.direction_timer += dt
+        if self.direction_timer >= self.direction_change_interval:
+            self.angle += random.uniform(-1.0, 1.0) * 0.8 
+            self.direction_timer = 0
+            self.direction_change_interval = random.uniform(0.8, 2.0)
 
-        for other in squares:
+        vx: float = math.cos(self.angle) * self.speed
+        vy: float = math.sin(self.angle) * self.speed
+
+        flee_dx, flee_dy = self.compute_flee_vector(all_squares)
+        chase_dx, chase_dy = self.compute_chase_vector(all_squares)
+
+        vx += flee_dx * 120
+        vy += flee_dy * 120
+
+        vx -= chase_dx * 120
+        vy -= chase_dy * 120
+
+        self.x += vx * dt
+        self.y += vy * dt
+
+        if self.x <= 0 or self.x >= SCREEN_WIDTH - self.size:
+            self.angle = math.pi - self.angle
+            self.x = max(0, min(SCREEN_WIDTH - self.size, self.x))
+
+        if self.y <= 0 or self.y >= SCREEN_HEIGHT - self.size:
+            self.angle = -self.angle
+            self.y = max(0, min(SCREEN_HEIGHT - self.size, self.y))
+
+        self.age += dt
+
+    def compute_flee_vector(self, all_squares: List['Square']) -> Tuple[float, float]:
+        flee_dx: float = 0.0
+        flee_dy: float = 0.0
+
+        for other in all_squares:
             if other is self:
                 continue
 
             dx: float = self.x - other.x
             dy: float = self.y - other.y
-            dist_sq: float = dx * dx + dy * dy
+            dist: float = math.sqrt(dx*dx + dy*dy)
 
-            if dist_sq == 0 or dist_sq > DANGER_DISTANCE_SQ:
+            if other.size > self.size and 0 < dist < DANGER_DISTANCE:
+                strength: float = (1 - dist / DANGER_DISTANCE)
+
+                flee_dx += (dx / dist) * strength
+                flee_dy += (dy / dist) * strength
+
+        return flee_dx, flee_dy
+
+    def compute_chase_vector(self, all_squares: List['Square']) -> Tuple[float, float]:
+        chase_dx: float = 0.0
+        chase_dy: float = 0.0
+
+        for other in all_squares:
+            if other is self:
                 continue
 
-            distance: float = math.sqrt(dist_sq)
-            dir_x, dir_y = dx / distance, dy / distance
+            dx: float = self.x - other.x
+            dy: float = self.y - other.y
+            dist: float = math.sqrt(dx*dx + dy*dy)
 
-            closeness: float = 1.0 - (distance / DANGER_DISTANCE)
+            if other.size < self.size and 0 < dist < DANGER_DISTANCE:
+                strength: float = (1 - dist / DANGER_DISTANCE)
 
-            if other.size > self.size:
-                # flee (unchanged)
-                force_x += dir_x * FLEE_FORCE * size_factor
-                force_y += dir_y * FLEE_FORCE * size_factor
-            else:
-                # chase (stronger when closer)
-                chase_strength: float = CHASE_FORCE * size_factor * closeness
-                force_x -= dir_x * chase_strength
-                force_y -= dir_y * chase_strength
+                chase_dx += (dx / dist) * strength
+                chase_dy += (dy / dist) * strength
 
-        return force_x, force_y
-
-    def update(self, squares: List["Square"], dt: float) -> None:
-        force_x, force_y = self.compute_interaction(squares)
-
-        self.vx += force_x * dt
-        self.vy += force_y * dt
-
-        self.vx, self.vy = clamp_velocity(self.vx, self.vy, self.max_speed)
-
-        self.x += self.vx * dt
-        self.y += self.vy * dt
-
-        # bounce
-        if self.x <= 0 or self.x >= SCREEN_WIDTH - self.size:
-            self.vx *= -1
-            self.x = max(0, min(SCREEN_WIDTH - self.size, self.x))
-
-        if self.y <= 0 or self.y >= SCREEN_HEIGHT - self.size:
-            self.vy *= -1
-            self.y = max(0, min(SCREEN_HEIGHT - self.size, self.y))
-
-        self.age += dt
+        return chase_dx, chase_dy
 
     def draw(self, screen: pygame.Surface) -> None:
-        pygame.draw.rect(
-            screen,
-            self.color,
-            (self.x, self.y, self.size, self.size),
-        )
+        pygame.draw.rect(screen, self.color, (self.x, self.y, self.size, self.size))
 
 
 def main() -> None:
     screen: pygame.Surface = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-    pygame.display.set_caption("Smart Squares")
+    pygame.display.set_caption("Smooth Squares")
     clock: pygame.time.Clock = pygame.time.Clock()
 
     squares: List[Square] = [Square() for _ in range(NUM_SQUARES)]
@@ -164,8 +153,16 @@ def main() -> None:
         for square in squares:
             square.update(squares, dt)
 
-        new_squares: List[Square] = []
+        screen.fill(RANDOM_COLOUR)
+
         for square in squares:
+            square.draw(screen)
+            
+        new_squares: List[Square] = []
+
+        for square in squares:
+            square.age += dt
+
             if square.age < square.lifespan:
                 new_squares.append(square)
             else:
@@ -173,20 +170,7 @@ def main() -> None:
 
         squares = new_squares
 
-        screen.fill(BACKGROUND_COLOR)
-
-        for square in squares:
-            square.draw(screen)
-
-        fps_text: pygame.Surface = font.render(
-            f"{int(clock.get_fps())} FPS", True, BLACK
-        )
-        count_text: pygame.Surface = font.render(
-            f"{len(squares)} squares", True, BLACK
-        )
-
-        screen.blit(fps_text, (20, 20))
-        screen.blit(count_text, (20, 60))
+        screen.blit(fps_surface, (50, 50))
 
         pygame.display.flip()
 

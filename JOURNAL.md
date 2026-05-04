@@ -452,3 +452,15 @@
 - **Hook Version**: 1.02
 - **Date**: 04-05-2026 07:49
 - **Prompt**: To main.py, add comments everywhere to help me understand the code better (well, not everywhere everywhere, but where you deem necessary and helpful)
+
+### **New Interaction**
+- **Agent Version**: 2.3
+- **Date**: 04-05-2026 07:49
+- **User**: kevin.ogbusuo@epita.fr
+- **Prompt**: To main.py, add comments everywhere to help me understand the code better (well, not everywhere everywhere, but where you deem necessary and helpful)
+- **CoPilot Mode**: Edit
+- **CoPilot Model**: GPT-5.3-Codex
+- **Socratic Mode**: ON
+- **Changes Made**: Added targeted explanatory comments to main.py covering constants, random background setup, square initialization, movement, flee/chase behavior, boundary handling, drawing, and the main loop.
+- **Context and Reasons for Changes**: The goal was to make the control flow and physics easier to follow without cluttering every line with comments.
+

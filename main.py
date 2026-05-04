@@ -88,8 +88,6 @@ class Square:
             self.angle = -self.angle
             self.y = max(0, min(SCREEN_HEIGHT - self.size, self.y))
 
-        self.age += dt
-
     def compute_flee_vector(self, all_squares: List['Square']) -> Tuple[float, float]:
         flee_dx: float = 0.0
         flee_dy: float = 0.0

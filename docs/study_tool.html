@@ -472,20 +472,19 @@
         <section id="study-summary" class="section">
             <h2>📚 Study Summary</h2>
             <h3>Project Overview</h3>
-            <p>This pygame project implements a dynamic square simulation with 50 animated entities that exhibit predator-prey behavior. Smaller squares flee from larger ones, while larger squares chase smaller ones—all within a time-based physics system.</p>
+            <p>This project is a single-file Pygame simulation where 50 square agents move with angle-based velocity, avoid larger neighbors, chase smaller neighbors, bounce at boundaries, and respawn after lifespan expiry.</p>
             <h3>Core Concepts Covered</h3>
-            <p>• <strong>Object-Oriented Design:</strong> Square class with state management and behavior methods</p>
-            <p>• <strong>Game Loop Architecture:</strong> Event handling, physics updates, rendering pipeline</p>
-            <p>• <strong>Time-Based Physics:</strong> Delta-time integration for frame-rate-independent movement</p>
-            <p>• <strong>Vector Math:</strong> Trigonometric calculations for direction and distance</p>
-            <p>• <strong>Behavioral AI:</strong> Flee and chase logic based on size and proximity</p>
-            <p>• <strong>Entity Lifecycle:</strong> Lifespan-based respawning and state recycling</p>
-            <p>• <strong>Type Safety:</strong> Comprehensive type hints throughout the codebase</p>
+            <p>• <strong>Source Evidence Order:</strong> Python files scanned deterministically as <code>gitignore.py</code>, <code>main.py</code>, <code>tempCodeRunnerFile.py</code>; only <code>main.py</code> contains executable project logic.</p>
+            <p>• <strong>Data Flow:</strong> <code>main()</code> orchestrates event polling, per-square updates, drawing, replacement, and HUD rendering each frame.</p>
+            <p>• <strong>Behavior Logic:</strong> <code>Square.update()</code> combines random direction drift, flee vectors, chase vectors, and wall reflection.</p>
+            <p>• <strong>State Mutation:</strong> Position (<code>x</code>, <code>y</code>), angle, and age are mutated every frame; lifespan replacement keeps population constant.</p>
+            <p>• <strong>Complexity:</strong> Neighbor scans in <code>compute_flee_vector</code> and <code>compute_chase_vector</code> imply per-frame interaction cost proportional to $O(n^2)$ for <code>n</code> squares.</p>
+            <p>• <strong>Robustness Insight:</strong> Age is incremented both inside <code>Square.update()</code> and again in the lifecycle loop, which accelerates expiration relative to a single increment design.</p>
         </section>
 
         <section id="mode-switcher" class="section">
             <button class="mode-btn active" id="flashcard-mode-btn">📇 Flashcards</button>
-            <button class="mode-btn" id="quiz-mode-btn">✅ Quiz (15 Questions)</button>
+            <button class="mode-btn" id="quiz-mode-btn">✅ Quiz (Medium, 15 Questions)</button>
         </section>
 
         <section id="flashcards" class="section">
@@ -503,228 +502,273 @@
 
     <script>
         // ========== DATA DEFINITIONS ==========
+        const STUDY_TOOL_TEMPLATE_VERSION = "2.0";
+        const STUDY_DIFFICULTY = "Medium";
+        const STUDY_QUESTION_COUNT = 15;
+
         const flashcards = [
             {
-                front: "Square Initialization",
-                back: "Each square starts with: random size (10-50px), random position on screen, random RGB color, random angle (0-2π), and speed derived from size (larger = slower). See main.py:__init__"
+                front: "Square Initialization Pipeline",
+                back: "Trace: main.py -> Square.__init__ | Anchor: self.size, self.x/self.y, self.color, self.angle, self.speed\nThe constructor assigns randomized spawn state, then derives speed from size using size_ratio, creating size-dependent motion profiles."
             },
             {
-                front: "Time-Based Movement",
-                back: "Position update uses dt (delta time in seconds): new_x = x + vx * dt. This makes movement frame-rate independent. See main.py:update() line ~46"
+                front: "Speed From Size Tradeoff",
+                back: "Trace: main.py -> Square.__init__ | Anchor: self.speed = MAX_SPEED * (1 - size_ratio)\nLarger squares are slower by design, which balances predator advantage and prevents large squares from dominating purely by size."
             },
             {
-                front: "Direction Timer Pattern",
-                back: "direction_timer accumulates dt each frame. When it exceeds direction_change_interval (0.5-1.5s), angle randomizes and timer resets. See main.py:update() line ~32"
+                front: "Direction Drift Timer",
+                back: "Trace: main.py -> Square.update | Anchor: self.direction_timer += dt and self.direction_change_interval\nDirection is not random every frame; it drifts at intervals, preserving smoothness while avoiding repetitive straight-line motion."
             },
             {
-                front: "Flee Vector Computation",
-                back: "compute_flee_vector() iterates all squares, finds those larger than self within danger_distance (50px), normalizes dx/dy vectors away from them, and sums. See main.py:compute_flee_vector()"
+                front: "Base Velocity Construction",
+                back: "Trace: main.py -> Square.update | Anchor: vx = math.cos(self.angle) * self.speed, vy = math.sin(self.angle) * self.speed\nAngle and scalar speed are converted into x/y components each frame before behavior forces are applied."
             },
             {
-                front: "Chase Vector Computation",
-                back: "compute_chase_vector() mirrors flee logic but targets squares smaller than self. Returns normalized vectors toward prey. See main.py:compute_chase_vector()"
+                front: "Flee Vector Rule",
+                back: "Trace: main.py -> Square.compute_flee_vector | Anchor: if other.size > self.size and 0 < dist < DANGER_DISTANCE\nOnly larger nearby squares contribute to flee direction, and each contribution is distance-weighted by (1 - dist / DANGER_DISTANCE)."
             },
             {
-                front: "Velocity Combination",
-                back: "Base velocity from angle + (flee_dx * 200) + (chase_dx * 200). The 200x scaling makes behavioral vectors dominate random movement. See main.py:update() line ~48-54"
+                front: "Chase Vector Rule",
+                back: "Trace: main.py -> Square.compute_chase_vector | Anchor: if other.size < self.size and 0 < dist < DANGER_DISTANCE\nChase uses symmetric selection logic for smaller neighbors; update() subtracts chase vector so movement points toward prey."
             },
             {
-                front: "Boundary Collision",
-                back: "If x ≤ 0 or x ≥ SCREEN_WIDTH-size, bounce: angle = π - angle (horizontal reflection). Similar for y. Clamp position to bounds. See main.py:update() line ~56-62"
+                front: "Force Blending",
+                back: "Trace: main.py -> Square.update | Anchor: vx += flee_dx * 120 and vx -= chase_dx * 120\nBehavioral vectors are scaled and blended into base velocity, combining wandering, survival, and pursuit in one update step."
             },
             {
-                front: "Lifespan & Rebirth",
-                back: "certain_variable accumulates dt each frame. When it exceeds lifespan (30-180 frames), square is removed from list and new Square() appended. See main.py:main() line ~87-90"
+                front: "Boundary Reflection",
+                back: "Trace: main.py -> Square.update | Anchor: self.angle = math.pi - self.angle and self.angle = -self.angle\nWall collisions reflect heading angle and clamp position, keeping agents on-screen without teleportation."
             },
             {
-                front: "Speed-Size Relationship",
-                back: "size_ratio = (size - MIN_SIZE) / (MAX_SIZE - MIN_SIZE). speed = MAX_SPEED * (1 - size_ratio). Larger squares move slower. See main.py:__init__ line ~19-20"
+                front: "Lifecycle Replacement",
+                back: "Trace: main.py -> main | Anchor: if square.age < square.lifespan: new_squares.append(square) else new_squares.append(Square())\nA new list is rebuilt each frame so expired entities are replaced while population count remains stable."
             },
             {
-                front: "Rendering Pipeline",
-                back: "Each frame: fill screen, loop all squares, check if certain_variable < lifespan, draw active squares as pygame.draw.rect(), flip display. See main.py:main() line ~80-91"
+                front: "Age Mutation Hotspot",
+                back: "Trace: main.py -> Square.update and main lifecycle loop | Anchor: self.age += dt and square.age += dt\nAge increases in two locations each frame, which is a key debugging and reasoning point for expected survival duration."
             },
             {
-                front: "Type Hints Purpose",
-                back: "Type hints document parameter and return types (e.g., def update(self, all_squares: List['Square'], dt: float) -> None). Enable IDE autocompletion and catch type errors. See main.py lines ~2-6"
+                front: "Render Loop Responsibilities",
+                back: "Trace: main.py -> main | Anchor: screen.fill(...), square.draw(...), screen.blit(...), pygame.display.flip()\nDraw phase clears background, renders all squares, overlays HUD text, and presents final frame."
             },
             {
-                front: "Game Loop Phases",
-                back: "Each iteration: (1) tick clock for dt, (2) poll events, (3) update all squares, (4) render, (5) check lifespan/respawn. 60 FPS target. See main.py:main() line ~74-91"
+                front: "State Trace Through Frame",
+                back: "Trace: main.py -> main while running | Anchor: update -> draw -> rebuild list\nEach frame mutates motion state first, then visuals, then lifecycle state, which affects next-frame neighborhood interactions."
             },
             {
-                front: "O(n²) Complexity",
-                back: "Each square's update() iterates all n squares for flee/chase checks. Total: ~2,500 distance checks per frame (50²) at 60 FPS. Opportunity: spatial partitioning (quadtree) → O(n log n)"
+                front: "Complexity Signal",
+                back: "Trace: main.py -> compute_flee_vector and compute_chase_vector | Anchor: for other in all_squares\nNeighbor scans are linear per square; across all squares this yields quadratic interaction work per frame."
             },
             {
-                front: "Flee vs Chase Trade-off",
-                back: "Flee from larger (survival instinct), chase smaller (growth instinct). Both scaled by 200. Creates emergent predator-prey dynamics without explicit rules. See main.py:compute_flee_vector() and compute_chase_vector()"
+                front: "Type-Hint Contract",
+                back: "Trace: main.py signatures | Anchor: List['Square'], Tuple[int, int, int], pygame.Surface\nType hints encode expected data shape, making flow analysis and refactoring safer for learners."
             },
             {
-                front: "Distance Calculation",
-                back: "distance = sqrt(dx² + dy²) where dx = self.x - other.x, dy = self.y - other.y. Compared against danger_distance (50px) to trigger flee/chase. See main.py:compute_flee_vector() line ~65"
+                front: "Main Loop Timing",
+                back: "Trace: main.py -> main | Anchor: dt = clock.tick(FPS) / 1000.0\nTime-normalized updates make behavior largely frame-rate independent, provided force magnitudes and dt scaling remain consistent."
             }
         ];
 
         const quizData = [
             {
-                question: "In main.py, the Square.__init__ method sets self.speed based on a size_ratio. What is the mathematical relationship between square size and speed?",
+                category: "Behavior Tracing",
+                trace: "main.py -> Square.update | self.direction_timer += dt",
+                question: "A square has direction_timer = 0.9 and direction_change_interval = 1.0. If dt = 0.2 this frame, what must happen before velocity is computed?",
                 options: [
-                    "Larger squares move faster",
-                    "Larger squares move slower (speed = MAX_SPEED × (1 - size_ratio))",
-                    "Size and speed are unrelated",
-                    "Speed increases exponentially with size"
+                    "No direction change occurs because timer resets only on collisions",
+                    "direction_timer becomes 1.1, angle may be perturbed, timer resets to 0, and a new interval is sampled",
+                    "The square immediately respawns with a new lifespan",
+                    "vx and vy are forced to zero for this frame"
                 ],
                 correct: 1,
-                explanation: "The code calculates size_ratio = (self.size - MIN_SIZE) / (MAX_SIZE - MIN_SIZE), then speed = MAX_SPEED * (1 - size_ratio). This means larger squares get a smaller multiplier and move slower, simulating weight/inertia."
+                explanation: "The update branch checks timer >= interval before velocity assembly. Crossing the threshold triggers angle perturbation, timer reset, and interval resampling."
             },
             {
-                question: "What is the purpose of the direction_timer and direction_change_interval in main.py?",
+                category: "Behavior Tracing",
+                trace: "main.py -> Square.update | vx += flee_dx * 120, vx -= chase_dx * 120",
+                question: "If a smaller target is to the right of the current square, chase_dx is typically negative (dx = self.x - other.x). What does vx -= chase_dx * 120 do?",
                 options: [
-                    "To track how long a square has been on screen",
-                    "To gradually fade the square's color over time",
-                    "To periodically randomize movement direction every 0.5-1.5 seconds",
-                    "To measure the square's lifespan before respawn"
+                    "Pushes vx more negative, moving left",
+                    "Cancels all movement regardless of angle",
+                    "Adds a positive amount to vx, pulling motion toward the right target",
+                    "Only affects vy and not vx"
                 ],
                 correct: 2,
-                explanation: "direction_timer accumulates dt each frame. When it reaches direction_change_interval (random 0.5-1.5s), the angle is randomized and timer resets. This creates natural variation in movement without complete randomness."
+                explanation: "Subtracting a negative value increases vx, which points movement rightward toward prey in that geometry."
             },
             {
-                question: "In compute_flee_vector(), why does the code check `if other_square.size > self.size`?",
+                category: "Behavior Tracing",
+                trace: "main.py -> Square.update | self.angle = math.pi - self.angle",
+                question: "When x crosses a side boundary, why is angle updated with math.pi - angle?",
                 options: [
-                    "To only flee from squares that are bigger (predators)",
-                    "To optimize by skipping unnecessary comparisons",
-                    "To prevent infinite loops",
-                    "To make the function symmetric with compute_chase_vector()"
+                    "It reflects horizontal direction while preserving vertical component",
+                    "It randomizes direction to avoid loops",
+                    "It clamps speed to MAX_SPEED",
+                    "It converts radians to degrees"
                 ],
                 correct: 0,
-                explanation: "compute_flee_vector() models survival: a square only flees from threats (larger squares). compute_chase_vector() does the opposite—chasing smaller prey. This creates the predator-prey dynamic."
+                explanation: "For side-wall bounce, horizontal component should flip while vertical component remains consistent; pi - angle performs that reflection."
             },
             {
-                question: "What does the max(0, min(SCREEN_WIDTH - self.size, self.x)) operation accomplish?",
+                category: "Behavior Tracing",
+                trace: "main.py -> main | new_squares.append(square) / new_squares.append(Square())",
+                question: "Why does the visible square count remain constant even when many agents expire in the same frame?",
                 options: [
-                    "Calculates the maximum distance the square can travel",
-                    "Clamps the position to stay within screen bounds and prevents rendering off-screen",
-                    "Selects the smallest valid x coordinate",
-                    "Compares the square's size to screen width"
+                    "Expired squares are hidden but still counted",
+                    "Each expired square is replaced by a newly constructed Square in the same lifecycle pass",
+                    "pygame.draw.rect duplicates squares automatically",
+                    "The HUD hardcodes NUM_SQUARES as text"
                 ],
                 correct: 1,
-                explanation: "This is a clamping operation: max(...) ensures the result is at least 0, min(...) ensures it doesn't exceed SCREEN_WIDTH - size. Together they keep the square visible within bounds."
+                explanation: "The lifecycle loop rebuilds the list and inserts a replacement for every expired element, preserving cardinality."
             },
             {
-                question: "In the update() method, velocity is modified by flee and chase vectors, both scaled by 200. Why this specific scaling factor?",
+                category: "Debugging/Fault Localization",
+                trace: "main.py -> Square.update + main lifecycle loop | self.age += dt and square.age += dt",
+                question: "A student reports squares expiring earlier than expected. Which code pattern is the strongest root-cause candidate?",
                 options: [
-                    "It's arbitrary and chosen randomly each frame",
-                    "To make behavior-driven vectors dominate over base random movement",
-                    "To match the screen dimensions in pixels",
-                    "To synchronize with the 60 FPS frame rate"
-                ],
-                correct: 1,
-                explanation: "Base velocity has magnitude ~100 (MAX_SPEED). Scaling flee/chase by 200 makes these behavioral forces much stronger, so intelligent behavior overrides random wandering. Without this scaling, squares would move mostly randomly."
-            },
-            {
-                question: "What is the significance of the `certain_variable` accumulating dt in main.py:main()?",
-                options: [
-                    "It measures total time elapsed since game start",
-                    "It tracks how long a square has existed and triggers respawn when > lifespan",
-                    "It's a debug variable with no functional purpose",
-                    "It controls the frame rate timing"
-                ],
-                correct: 1,
-                explanation: "Each frame, certain_variable += dt. When it exceeds the square's lifespan (30-180 frames), the square is removed and a new one appended. This implements entity recycling without memory leaks."
-            },
-            {
-                question: "Why does the code use `if other_square is self: continue` in compute_flee_vector()?",
-                options: [
-                    "To prevent the square from calculating distance to itself (which would be 0)",
-                    "To optimize performance by skipping the comparison",
-                    "To avoid modifying other_square during iteration",
-                    "To check if two squares have the same color"
+                    "Age increments in both update() and lifecycle pass each frame",
+                    "RANDOM_COLOUR is chosen once at startup",
+                    "Font rendering uses pygame.font.Font(None, 30)",
+                    "Direction intervals are sampled with random.uniform(0.8, 2.0)"
                 ],
                 correct: 0,
-                explanation: "If a square calculated distance to itself, distance would always be 0, triggering spurious flee/chase behavior. The identity check prevents this by skipping self-comparison."
+                explanation: "Two age increments per frame effectively accelerate aging relative to a single-increment model."
             },
             {
-                question: "In the game loop (main.py:main()), what does `dt = clock.tick(FPS) / 1000.0` compute?",
+                category: "Debugging/Fault Localization",
+                trace: "main.py -> compute_flee_vector / compute_chase_vector | 0 < dist < DANGER_DISTANCE",
+                question: "Why is the condition 0 < dist important in both vector functions?",
                 options: [
-                    "Frames per second",
-                    "Delta time in seconds (milliseconds from last frame / 1000)",
-                    "Total time since game started",
-                    "Screen refresh rate"
+                    "It avoids division by zero when normalizing (dx / dist, dy / dist)",
+                    "It enforces integer-only distances",
+                    "It speeds up rendering calls",
+                    "It forces all squares to move at equal speed"
+                ],
+                correct: 0,
+                explanation: "Normalization divides by dist, so the explicit lower bound is a guard against undefined arithmetic."
+            },
+            {
+                category: "Debugging/Fault Localization",
+                trace: "main.py -> __init__ and update | random.uniform, random.randint",
+                question: "Two runs produce different motion patterns even without code changes. Which explanation best matches the implementation?",
+                options: [
+                    "Pygame caches old positions between runs",
+                    "Randomized initialization and interval sampling are intentionally non-deterministic",
+                    "clock.tick(FPS) introduces deterministic replay",
+                    "Type hints alter runtime randomness"
                 ],
                 correct: 1,
-                explanation: "clock.tick(60) returns milliseconds since last tick. Dividing by 1000 converts to seconds (dt). Position updates use dt to scale velocity: new_pos = old_pos + velocity * dt."
+                explanation: "Size, position, color, angle, lifespan, and direction-change intervals all rely on random sampling without fixed seeds."
             },
             {
-                question: "What is the time complexity of updating all 50 squares' flee/chase logic?",
+                category: "Design Tradeoff",
+                trace: "main.py -> Square.update signature | update(self, all_squares, dt)",
+                question: "Why is passing all_squares into update() a stronger design choice than reading a module-global list?",
                 options: [
-                    "O(n) where n=50",
-                    "O(n²) where n=50 (~2,500 distance checks per frame)",
+                    "It removes the need for dt",
+                    "It makes dependencies explicit and improves testability",
+                    "It lets Square change pygame event handling",
+                    "It guarantees O(n) total complexity"
+                ],
+                correct: 1,
+                explanation: "Explicit inputs reduce hidden coupling and make isolated unit tests for behavior logic possible."
+            },
+            {
+                category: "Design Tradeoff",
+                trace: "main.py -> __init__ | self.speed = MAX_SPEED * (1 - size_ratio)",
+                question: "What simulation effect does the speed-from-size rule create?",
+                options: [
+                    "Uniform motion regardless of size",
+                    "Bigger squares become slower, helping balance predator-prey interactions",
+                    "Smaller squares always stop near edges",
+                    "Square color determines velocity"
+                ],
+                correct: 1,
+                explanation: "The inverse scaling introduces a balancing factor so size advantage is moderated by reduced mobility."
+            },
+            {
+                category: "Design Tradeoff",
+                trace: "main.py -> main | screen.fill(RANDOM_COLOUR)",
+                question: "RANDOM_COLOUR is set once from make_random_colour() before the loop. What tradeoff does this represent?",
+                options: [
+                    "Stable background improves readability, but loses per-frame visual variation",
+                    "It forces lower FPS to keep colors synced",
+                    "It disables square color randomization",
+                    "It prevents respawn behavior"
+                ],
+                correct: 0,
+                explanation: "A fixed random background avoids flicker and keeps contrast stable, at the cost of dynamic background effects."
+            },
+            {
+                category: "Edge Case/Robustness",
+                trace: "main.py -> __init__ | random.randint(0, SCREEN_WIDTH - self.size)",
+                question: "Why does spawn position use SCREEN_WIDTH - self.size (and similarly for height)?",
+                options: [
+                    "To prevent newly spawned squares from starting partially off-screen",
+                    "To make all squares spawn at the center",
+                    "To match DANGER_DISTANCE exactly",
+                    "To reduce memory allocation"
+                ],
+                correct: 0,
+                explanation: "The upper bound accounts for square dimensions so the entire rect fits within display bounds on spawn."
+            },
+            {
+                category: "Edge Case/Robustness",
+                trace: "main.py -> compute_flee_vector / compute_chase_vector | if ... and 0 < dist < DANGER_DISTANCE",
+                question: "If no eligible neighbors are within DANGER_DISTANCE, what movement behavior remains?",
+                options: [
+                    "Square freezes because vx and vy become zero",
+                    "Only base angle-driven velocity (plus occasional direction drift) affects motion",
+                    "Square teleports to a random location",
+                    "Square is immediately respawned"
+                ],
+                correct: 1,
+                explanation: "With zero flee/chase contributions, motion is determined by angle, speed, and boundary reflections."
+            },
+            {
+                category: "Edge Case/Robustness",
+                trace: "main.py -> event loop | if event.type == pygame.QUIT: running = False",
+                question: "When a QUIT event is detected, what best describes control flow?",
+                options: [
+                    "The process exits instantly before current frame ends",
+                    "running is set false, loop condition fails next check, then pygame.quit() executes",
+                    "All squares are deleted before exiting",
+                    "The event is ignored unless FPS < 30"
+                ],
+                correct: 1,
+                explanation: "The flag-based loop exit model terminates cleanly and reaches the explicit pygame.quit() call."
+            },
+            {
+                category: "Big-O",
+                trace: "main.py -> update + neighbor scans | for square in squares and for other in all_squares",
+                question: "For n squares, what is the asymptotic interaction cost per frame in the current design?",
+                options: [
+                    "O(1)",
                     "O(log n)",
-                    "O(n³)"
+                    "O(n)",
+                    "O(n^2)"
+                ],
+                correct: 3,
+                explanation: "Each square performs linear neighbor scanning (flee and chase); across n squares this yields quadratic work per frame."
+            },
+            {
+                category: "Big-O",
+                trace: "main.py -> compute_flee_vector / compute_chase_vector | full list scans",
+                question: "Which change is most aligned with reducing average neighbor-check complexity in larger simulations?",
+                options: [
+                    "Increase FPS to 120",
+                    "Use spatial partitioning (for example, grid buckets or quadtree) before local neighbor checks",
+                    "Replace math.sqrt with abs",
+                    "Remove type hints"
                 ],
                 correct: 1,
-                explanation: "Each of 50 squares iterates the other ~50 to compute flee/chase vectors. That's 50×50=2,500 distance calculations per frame at 60 FPS. Spatial partitioning (quadtree) could reduce this to O(n log n)."
-            },
-            {
-                question: "Why is `all_squares` passed to the update() method instead of accessed globally?",
-                options: [
-                    "To make the method testable and avoid global state coupling",
-                    "To satisfy Python syntax requirements",
-                    "To improve rendering performance",
-                    "To enable squares to modify the main list directly"
-                ],
-                correct: 0,
-                explanation: "Passing all_squares as a parameter makes the Square class more modular and testable. It avoids tight coupling to global state and makes the dependency explicit in the method signature."
-            },
-            {
-                question: "In compute_flee_vector(), after finding the direction away (away_dx, away_dy), why normalize the vector (divide by distance)?",
-                options: [
-                    "To make all flee vectors the same magnitude (unit vectors)",
-                    "To save memory",
-                    "To prevent division by zero later",
-                    "To slow down the square's escape"
-                ],
-                correct: 0,
-                explanation: "Normalizing converts the raw (dx, dy) difference into a unit vector (magnitude=1) pointing away from the threat. This makes all flee directions equally strong, regardless of distance. They're then scaled by 200 in update()."
-            },
-            {
-                question: "If a square hits the left wall (x ≤ 0), how does the bounce physics work?",
-                options: [
-                    "angle = 0 (square stops moving)",
-                    "angle = π - angle (horizontal reflection, like a mirror)",
-                    "angle = -angle (vertical reflection)",
-                    "angle randomizes completely"
-                ],
-                correct: 1,
-                explanation: "angle = π - angle reflects the angle across a vertical axis, simulating a bounce off the left/right wall. For example, 45° becomes 135°. For top/bottom walls, angle = -angle (vertical reflection)."
-            },
-            {
-                question: "What advantage does time-based movement (using dt) provide over frame-based movement?",
-                options: [
-                    "It makes the code shorter",
-                    "Frame rate independent: squares move the same distance per second regardless of FPS",
-                    "It eliminates the need for a game clock",
-                    "It reduces memory usage"
-                ],
-                correct: 1,
-                explanation: "Frame-based: position += velocity per frame (varies if FPS drops). Time-based: position += velocity * dt (constant per second). If FPS drops from 60 to 30, dt doubles but frame count halves—distance traveled stays the same."
-            },
-            {
-                question: "Why does the main() function create a new Square() and append it instead of reusing existing instances when lifespan expires?",
-                options: [
-                    "To avoid attribute errors from stale state",
-                    "To recycle memory and simplify lifecycle management",
-                    "Because Python requires new objects",
-                    "To change colors dynamically"
-                ],
-                correct: 1,
-                explanation: "Creating fresh Square() instances ensures clean, randomized state (new size, position, color, speed). It's simpler than manually resetting each attribute and avoids bugs from stale state."
+                explanation: "Spatial indexing limits candidate neighbors by region, reducing unnecessary global pair checks compared with full scans."
             }
         ];
 
         // ========== STATE ==========
-        let currentMode = 'flashcard'; // 'flashcard' or 'quiz'
+        let currentMode = "flashcard";
         let currentQuestion = 0;
         let userAnswers = [];
         let quizSubmitted = false;
@@ -735,27 +779,28 @@
         }
 
         function show(element) {
-            element.style.display = 'block';
+            element.style.display = "block";
         }
 
         function hide(element) {
-            element.style.display = 'none';
+            element.style.display = "none";
         }
 
         // ========== FLASHCARD MODE ==========
         function initFlashcards() {
-            const grid = getElement('flashcard-grid');
-            grid.innerHTML = '';
-            
+            const grid = getElement("flashcard-grid");
+            grid.innerHTML = "";
+
             flashcards.forEach((card, index) => {
-                const cardEl = document.createElement('div');
-                cardEl.className = 'flashcard';
-                cardEl.tabindex = 0;
-                cardEl.role = 'button';
+                const cardEl = document.createElement("div");
+                cardEl.className = "flashcard";
+                cardEl.tabIndex = 0;
+                cardEl.setAttribute("role", "button");
+                cardEl.setAttribute("aria-label", `Flashcard ${index + 1}: ${card.front}`);
                 cardEl.innerHTML = `
                     <div class="flashcard-inner">
                         <div class="flashcard-front">
-                            <h3>Concept ${index + 1}</h3>
+                            <h3>Card ${index + 1}</h3>
                             <p>${card.front}</p>
                         </div>
                         <div class="flashcard-back">
@@ -764,80 +809,119 @@
                         </div>
                     </div>
                 `;
-                
-                cardEl.addEventListener('click', () => cardEl.classList.toggle('is-flipped'));
-                cardEl.addEventListener('keydown', (e) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                        e.preventDefault();
-                        cardEl.classList.toggle('is-flipped');
+
+                cardEl.addEventListener("click", () => {
+                    cardEl.classList.toggle("is-flipped");
+                });
+
+                cardEl.addEventListener("keydown", (event) => {
+                    if (event.key === "Enter" || event.key === " ") {
+                        event.preventDefault();
+                        cardEl.classList.toggle("is-flipped");
                     }
                 });
-                
+
                 grid.appendChild(cardEl);
             });
         }
 
         // ========== QUIZ MODE ==========
         function initQuizDOM() {
-            const quizContent = getElement('quiz-content');
-            quizContent.innerHTML = '';
-            
-            quizData.forEach((q, idx) => {
-                const container = document.createElement('div');
-                container.className = 'question-container';
-                container.id = `q-${idx}`;
+            const quizContent = getElement("quiz-content");
+            quizContent.innerHTML = "";
+
+            quizData.forEach((question, index) => {
+                const container = document.createElement("div");
+                container.className = "question-container";
+                container.id = `q-${index}`;
                 container.innerHTML = `
-                    <div class="question-meta">Question ${idx + 1} of ${quizData.length}</div>
-                    <div class="question-text">${q.question}</div>
+                    <div class="question-meta">Question ${index + 1} of ${quizData.length} | ${question.category}<br>Trace: ${question.trace}</div>
+                    <div class="question-text">${question.question}</div>
                     <div class="options">
-                        ${q.options.map((opt, optIdx) => `
-                            <div class="option" data-index="${optIdx}">${opt}</div>
-                        `).join('')}
+                        ${question.options.map((opt, optIndex) => `
+                            <div class="option" data-q="${index}" data-opt="${optIndex}">${opt}</div>
+                        `).join("")}
                     </div>
                 `;
                 quizContent.appendChild(container);
             });
-            
+
+            if (quizContent.dataset.bound !== "true") {
+                quizContent.addEventListener("click", handleQuizOptionClick);
+                quizContent.dataset.bound = "true";
+            }
+
             updateQuizNav();
         }
 
+        function handleQuizOptionClick(event) {
+            const option = event.target.closest(".option");
+            if (!option || quizSubmitted) {
+                return;
+            }
+
+            const qIndex = Number(option.dataset.q);
+            const optIndex = Number(option.dataset.opt);
+            if (Number.isNaN(qIndex) || Number.isNaN(optIndex)) {
+                return;
+            }
+
+            selectOption(qIndex, optIndex);
+        }
+
         function updateQuizNav() {
-            const navEl = document.querySelector('.quiz-nav');
-            navEl.innerHTML = `
-                <button class="quiz-nav-btn" id="prev-btn" ${currentQuestion === 0 ? 'disabled' : ''}>← Previous</button>
-                <span class="quiz-progress">${currentQuestion + 1} / ${quizData.length}</span>
-                <button class="quiz-nav-btn" id="next-btn" ${currentQuestion === quizData.length - 1 ? 'disabled' : ''}>Next →</button>
-                ${currentQuestion === quizData.length - 1 ? '<button class="quiz-nav-btn" id="submit-btn" style="background: var(--success); color: var(--bg);">Submit Quiz</button>' : ''}
+            const navEl = document.querySelector(".quiz-nav");
+            const navHtml = `
+                <button class="quiz-nav-btn" id="prev-btn" ${currentQuestion === 0 ? "disabled" : ""}>← Previous</button>
+                <span class="quiz-progress">${currentQuestion + 1} / ${quizData.length} (${STUDY_DIFFICULTY})</span>
+                <button class="quiz-nav-btn" id="next-btn" ${currentQuestion === quizData.length - 1 ? "disabled" : ""}>Next →</button>
+                ${currentQuestion === quizData.length - 1 ? '<button class="quiz-nav-btn" id="submit-btn" style="background: var(--success); color: var(--bg);">Submit Quiz</button>' : ""}
             `;
-            
-            getElement('prev-btn')?.addEventListener('click', prevQuestion);
-            getElement('next-btn')?.addEventListener('click', nextQuestion);
-            getElement('submit-btn')?.addEventListener('click', submitQuiz);
+            navEl.innerHTML = navHtml;
+
+            const prevBtn = getElement("prev-btn");
+            const nextBtn = getElement("next-btn");
+            const submitBtn = getElement("submit-btn");
+
+            if (prevBtn) {
+                prevBtn.addEventListener("click", prevQuestion);
+            }
+            if (nextBtn) {
+                nextBtn.addEventListener("click", nextQuestion);
+            }
+            if (submitBtn) {
+                submitBtn.addEventListener("click", submitQuiz);
+            }
         }
 
         function showQuestion(index) {
-            document.querySelectorAll('.question-container').forEach(q => q.classList.remove('active'));
-            const q = getElement(`q-${index}`);
-            if (q) q.classList.add('active');
-            
-            const options = q.querySelectorAll('.option');
-            options.forEach((opt, idx) => {
-                opt.classList.remove('selected', 'correct', 'incorrect');
-                if (userAnswers[index] === idx) {
-                    opt.classList.add('selected');
+            document.querySelectorAll(".question-container").forEach((node) => {
+                node.classList.remove("active");
+            });
+
+            const currentNode = getElement(`q-${index}`);
+            if (!currentNode) {
+                return;
+            }
+
+            currentNode.classList.add("active");
+            currentNode.querySelectorAll(".option").forEach((option) => {
+                const optIndex = Number(option.dataset.opt);
+                option.classList.remove("selected", "correct", "incorrect");
+                if (userAnswers[index] === optIndex) {
+                    option.classList.add("selected");
                 }
-                opt.addEventListener('click', () => selectOption(index, idx));
             });
         }
 
-        function selectOption(qIndex, optIndex) {
-            userAnswers[qIndex] = optIndex;
-            showQuestion(qIndex);
+        function selectOption(questionIndex, optionIndex) {
+            userAnswers[questionIndex] = optionIndex;
+            showQuestion(questionIndex);
         }
 
         function nextQuestion() {
             if (currentQuestion < quizData.length - 1) {
-                currentQuestion++;
+                currentQuestion += 1;
                 showQuestion(currentQuestion);
                 updateQuizNav();
             }
@@ -845,7 +929,7 @@
 
         function prevQuestion() {
             if (currentQuestion > 0) {
-                currentQuestion--;
+                currentQuestion -= 1;
                 showQuestion(currentQuestion);
                 updateQuizNav();
             }
@@ -854,114 +938,146 @@
         function submitQuiz() {
             quizSubmitted = true;
             let score = 0;
-            
-            quizData.forEach((q, idx) => {
-                if (userAnswers[idx] === q.correct) score++;
+
+            quizData.forEach((question, index) => {
+                if (userAnswers[index] === question.correct) {
+                    score += 1;
+                }
             });
-            
-            const resultsEl = getElement('quiz-results');
-            resultsEl.classList.add('show');
-            
-            const resultHTML = `
+
+            const resultsEl = getElement("quiz-results");
+            const resultsHtml = `
                 <div class="results-container">
                     <div class="score-display">${score}/${quizData.length}</div>
-                    <div class="score-label">Your Score: ${Math.round(score/quizData.length*100)}%</div>
+                    <div class="score-label">Score: ${Math.round((score / quizData.length) * 100)}% (${STUDY_DIFFICULTY})</div>
                     <div class="results-detail">
-                        ${quizData.map((q, idx) => {
-                            const isCorrect = userAnswers[idx] === q.correct;
-                            const userChoice = q.options[userAnswers[idx]];
-                            const correctChoice = q.options[q.correct];
+                        ${quizData.map((question, index) => {
+                            const isCorrect = userAnswers[index] === question.correct;
+                            const userChoice = userAnswers[index] !== undefined ? question.options[userAnswers[index]] : "Not answered";
+                            const correctChoice = question.options[question.correct];
                             return `
-                                <div class="result-item ${isCorrect ? 'correct' : 'incorrect'}">
-                                    <div class="result-question">Q${idx + 1}: ${isCorrect ? '✓' : '✗'}</div>
-                                    <div class="result-answer"><strong>Your answer:</strong> ${userChoice || 'Not answered'}</div>
-                                    ${!isCorrect ? `<div class="result-answer"><strong>Correct answer:</strong> ${correctChoice}</div>` : ''}
-                                    <div class="result-explanation">${q.explanation}</div>
+                                <div class="result-item ${isCorrect ? "correct" : "incorrect"}">
+                                    <div class="result-question">Q${index + 1} (${question.category}) ${isCorrect ? "✓" : "✗"}</div>
+                                    <div class="result-answer"><strong>Trace:</strong> ${question.trace}</div>
+                                    <div class="result-answer"><strong>Your answer:</strong> ${userChoice}</div>
+                                    ${isCorrect ? "" : `<div class="result-answer"><strong>Correct answer:</strong> ${correctChoice}</div>`}
+                                    <div class="result-explanation">${question.explanation}</div>
                                 </div>
                             `;
-                        }).join('')}
+                        }).join("")}
                     </div>
                     <button class="reset-btn" onclick="resetQuiz()">Retake Quiz</button>
                 </div>
             `;
-            
-            resultsEl.innerHTML = resultHTML;
-            hide(getElement('quiz-content'));
-            document.querySelector('.quiz-nav').innerHTML = '';
+
+            resultsEl.innerHTML = resultsHtml;
+            resultsEl.classList.add("show");
+            hide(getElement("quiz-content"));
+            document.querySelector(".quiz-nav").innerHTML = "";
         }
 
         function resetQuiz() {
             currentQuestion = 0;
             userAnswers = [];
             quizSubmitted = false;
-            getElement('quiz-results').classList.remove('show');
-            show(getElement('quiz-content'));
+
+            const resultsEl = getElement("quiz-results");
+            resultsEl.classList.remove("show");
+            resultsEl.innerHTML = "";
+
+            show(getElement("quiz-content"));
             initQuizDOM();
             showQuestion(0);
+            validateDOM();
         }
 
         // ========== MODE SWITCHING ==========
         function switchMode(mode) {
             currentMode = mode;
-            
-            document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
-            document.getElementById(mode + '-mode-btn').classList.add('active');
-            
-            if (mode === 'flashcard') {
-                show(getElement('flashcards'));
-                hide(getElement('quiz'));
+
+            document.querySelectorAll(".mode-btn").forEach((button) => {
+                button.classList.remove("active");
+            });
+
+            const activeButton = getElement(`${mode}-mode-btn`);
+            if (activeButton) {
+                activeButton.classList.add("active");
+            }
+
+            if (mode === "flashcard") {
+                show(getElement("flashcards"));
+                hide(getElement("quiz"));
             } else {
-                hide(getElement('flashcards'));
-                show(getElement('quiz'));
-                if (userAnswers.length === 0) {
-                    initQuizDOM();
-                    showQuestion(0);
-                }
+                hide(getElement("flashcards"));
+                show(getElement("quiz"));
+                showQuestion(currentQuestion);
+                updateQuizNav();
             }
         }
 
         // ========== INITIALIZATION ==========
         function init() {
+            if (quizData.length !== STUDY_QUESTION_COUNT) {
+                console.error(`Configured question count mismatch: expected ${STUDY_QUESTION_COUNT}, found ${quizData.length}`);
+            }
+
             initFlashcards();
             initQuizDOM();
             showQuestion(0);
-            
-            getElement('flashcard-mode-btn').addEventListener('click', () => switchMode('flashcard'));
-            getElement('quiz-mode-btn').addEventListener('click', () => switchMode('quiz'));
+
+            getElement("flashcard-mode-btn").addEventListener("click", () => switchMode("flashcard"));
+            getElement("quiz-mode-btn").addEventListener("click", () => switchMode("quiz"));
+
+            switchMode("flashcard");
         }
 
         // ========== DOM VALIDATION ==========
         function validateDOM() {
-            const required = [
-                '#flashcard-grid',
-                '#quiz-content',
-                '.quiz-nav',
-                '#quiz-results'
+            const missingSelectors = [];
+            const requiredSelectors = [
+                "#flashcards",
+                "#quiz",
+                "#quiz-content",
+                ".quiz-nav",
+                "#quiz-results"
             ];
-            
-            const missing = required.filter(sel => !document.querySelector(sel));
-            if (missing.length > 0) {
-                console.error('Missing required elements:', missing);
+
+            requiredSelectors.forEach((selector) => {
+                if (!document.querySelector(selector)) {
+                    missingSelectors.push(selector);
+                }
+            });
+
+            for (let i = 0; i < quizData.length; i += 1) {
+                const idSelector = `#q-${i}`;
+                if (!document.querySelector(idSelector)) {
+                    missingSelectors.push(idSelector);
+                }
+            }
+
+            const renderedFlashcards = document.querySelectorAll(".flashcard");
+            if (renderedFlashcards.length !== flashcards.length) {
+                missingSelectors.push(`.flashcard count expected ${flashcards.length} found ${renderedFlashcards.length}`);
+            }
+
+            renderedFlashcards.forEach((card, index) => {
+                if (!card.querySelector(".flashcard-front")) {
+                    missingSelectors.push(`.flashcard-front missing at card index ${index}`);
+                }
+                if (!card.querySelector(".flashcard-back")) {
+                    missingSelectors.push(`.flashcard-back missing at card index ${index}`);
+                }
+            });
+
+            if (missingSelectors.length > 0) {
+                console.error("Study tool DOM validation failed. Missing required nodes:", missingSelectors);
                 return false;
             }
-            
-            const flashcardCount = document.querySelectorAll('.flashcard').length;
-            if (flashcardCount !== 15) {
-                console.error(`Expected 15 flashcards, found ${flashcardCount}`);
-                return false;
-            }
-            
-            const questionCount = document.querySelectorAll('.question-container').length;
-            if (questionCount !== 15) {
-                console.error(`Expected 15 questions, found ${questionCount}`);
-                return false;
-            }
-            
-            console.log('✓ DOM validation passed: 15 flashcards, 15 quiz questions');
+
             return true;
         }
 
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener("DOMContentLoaded", () => {
             init();
             validateDOM();
         });

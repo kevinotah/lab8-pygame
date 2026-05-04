@@ -435,3 +435,15 @@
 - **Hook Version**: 1.02
 - **Date**: 04-05-2026 07:35
 - **Prompt**: Update README based on current main.py
+
+### **New Interaction**
+- **Agent Version**: 2.3
+- **Date**: 04-05-2026 07:35
+- **User**: kevin.ogbusuo@epita.fr
+- **Prompt**: Update README based on current main.py
+- **CoPilot Mode**: Edit
+- **CoPilot Model**: GPT-5.3-Codex
+- **Socratic Mode**: ON
+- **Changes Made**: Updated README to match current main.py behavior (50 squares, flee + chase logic, age/lifespan wording, DANGER_DISTANCE naming, and fixed notes).
+- **Context and Reasons for Changes**: The README had drifted from implementation details and used outdated terminology, so it was synchronized to prevent confusion for setup and behavior understanding.
+

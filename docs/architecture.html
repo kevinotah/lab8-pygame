@@ -1,608 +1,243 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pygame Moving Squares - Architecture Documentation</title>
-    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            line-height: 1.6;
-            color: #333;
-            background-color: #fafafa;
-            padding: 20px;
-        }
-        
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            background-color: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            padding: 40px;
-        }
-        
-        h1 {
-            color: #1976d2;
-            margin-bottom: 10px;
-            border-bottom: 3px solid #1976d2;
-            padding-bottom: 10px;
-        }
-        
-        h2 {
-            color: #424242;
-            margin-top: 40px;
-            margin-bottom: 20px;
-            padding-bottom: 8px;
-            border-bottom: 2px solid #e0e0e0;
-        }
-        
-        h3 {
-            color: #616161;
-            margin-top: 25px;
-            margin-bottom: 15px;
-        }
-        
-        .overview {
-            background-color: #f5f5f5;
-            padding: 20px;
-            border-left: 4px solid #1976d2;
-            margin: 20px 0;
-            border-radius: 4px;
-        }
-        
-        .diagram-container {
-            background-color: #fafafa;
-            border: 1px solid #e0e0e0;
-            border-radius: 4px;
-            padding: 20px;
-            margin: 20px 0;
-            display: flex;
-            justify-content: center;
-            overflow-x: auto;
-        }
-        
-        .mermaid {
-            display: flex;
-            justify-content: center;
-        }
-        
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 20px 0;
-        }
-        
-        th, td {
-            border: 1px solid #ddd;
-            padding: 12px;
-            text-align: left;
-        }
-        
-        th {
-            background-color: #f5f5f5;
-            font-weight: 600;
-            color: #424242;
-        }
-        
-        tr:nth-child(even) {
-            background-color: #fafafa;
-        }
-        
-        tr:hover {
-            background-color: #f0f0f0;
-        }
-        
-        code {
-            background-color: #f5f5f5;
-            padding: 2px 6px;
-            border-radius: 3px;
-            font-family: "Courier New", monospace;
-            color: #d32f2f;
-        }
-        
-        pre {
-            background-color: #f5f5f5;
-            padding: 15px;
-            border-radius: 4px;
-            overflow-x: auto;
-            margin: 15px 0;
-            border-left: 4px solid #1976d2;
-        }
-        
-        pre code {
-            background-color: transparent;
-            color: #333;
-            padding: 0;
-        }
-        
-        ul, ol {
-            margin-left: 20px;
-            margin: 10px 0 10px 20px;
-        }
-        
-        li {
-            margin: 8px 0;
-        }
-        
-        .section-note {
-            background-color: #e3f2fd;
-            padding: 15px;
-            border-left: 4px solid #2196f3;
-            border-radius: 4px;
-            margin: 15px 0;
-        }
-        
-        .section-note strong {
-            color: #1565c0;
-        }
-        
-        .tech-stack {
-            background-color: #f3e5f5;
-            padding: 15px;
-            border-left: 4px solid #7b1fa2;
-            border-radius: 4px;
-            margin: 15px 0;
-        }
-        
-        .footer {
-            margin-top: 60px;
-            padding-top: 20px;
-            border-top: 2px solid #e0e0e0;
-            text-align: center;
-            color: #999;
-            font-size: 0.9em;
-        }
-        
-        @media (max-width: 768px) {
-            .container {
-                padding: 20px;
-            }
-            
-            h1 {
-                font-size: 1.8em;
-            }
-            
-            h2 {
-                font-size: 1.3em;
-            }
-            
-            .diagram-container {
-                padding: 10px;
-            }
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Architecture Documentation</title>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <style>
+    :root {
+      --bg: #f5f7fb;
+      --panel: #ffffff;
+      --text: #1f2937;
+      --muted: #4b5563;
+      --line: #d1d5db;
+      --accent: #0f766e;
+      --accent-soft: #ccfbf1;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      background: radial-gradient(circle at top right, #e6fffa, var(--bg) 45%);
+      color: var(--text);
+      line-height: 1.5;
+    }
+
+    .wrap {
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 24px 16px 40px;
+    }
+
+    h1 {
+      margin: 0 0 10px;
+      font-size: clamp(1.6rem, 2.5vw, 2.2rem);
+      color: #134e4a;
+    }
+
+    h2 {
+      margin: 28px 0 12px;
+      font-size: clamp(1.1rem, 2vw, 1.4rem);
+      color: #115e59;
+      border-bottom: 2px solid var(--line);
+      padding-bottom: 6px;
+    }
+
+    p, li { color: var(--muted); }
+
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 16px;
+      margin-top: 14px;
+      box-shadow: 0 8px 24px rgba(15, 118, 110, 0.08);
+    }
+
+    .diagram {
+      overflow-x: auto;
+      padding: 8px;
+      background: #fcfffe;
+      border: 1px solid #e5e7eb;
+      border-radius: 10px;
+    }
+
+    code {
+      font-family: Consolas, "Courier New", monospace;
+      background: #f3f4f6;
+      border: 1px solid #e5e7eb;
+      border-radius: 4px;
+      padding: 1px 5px;
+      color: #111827;
+    }
+
+    ul {
+      padding-left: 18px;
+      margin: 8px 0;
+    }
+
+    .meta {
+      background: var(--accent-soft);
+      border-left: 4px solid var(--accent);
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <h1>🎮 Pygame Moving Squares - Architecture Documentation</h1>
-        
-        <div class="overview">
-            <h3>Overview</h3>
-            <p>This project is a simple Pygame-based simulation featuring multiple animated squares that move around the screen with intelligent behavior: they flee from larger squares and chase smaller ones. The architecture is minimal and focused, with a single main module orchestrating the game loop and a <code>Square</code> class handling individual entity behavior.</p>
-        </div>
-        
-        <!-- Section 1: Module Dependency Graph -->
-        <h2>1. Module Dependency Graph</h2>
-        <p>The project has minimal external dependencies, importing only from Python's standard library and Pygame.</p>
-        <div class="diagram-container">
-            <div class="mermaid">
+  <main class="wrap">
+    <h1>Architecture Documentation</h1>
+    <section class="card meta">
+      <p>
+        This page documents the current architecture implemented in <code>main.py</code>.
+        It is regenerated from source behavior and includes dependency, runtime, call, and sequence views.
+      </p>
+    </section>
+
+    <h2>Dependency Graph</h2>
+    <section class="card diagram">
+      <div class="mermaid">
 graph TD
-    PY["pygame<br/>(library)"]
-    MATH["math<br/>(library)"]
-    RANDOM["random<br/>(library)"]
-    TYPING["typing<br/>(library)"]
-    
     MAIN["main.py"]
-    
-    MAIN -->|imports| PY
-    MAIN -->|imports| MATH
-    MAIN -->|imports| RANDOM
-    MAIN -->|imports| TYPING
-    
-    MAIN -->|defines| SQUARE["Square<br/>(class)"]
-    MAIN -->|defines| MAIN_FUNC["main<br/>(function)"]
-    
-    style PY fill:#e1f5ff
-    style MATH fill:#e1f5ff
-    style RANDOM fill:#e1f5ff
-    style TYPING fill:#e1f5ff
-    style MAIN fill:#fff3e0
-    style SQUARE fill:#f3e5f5
-    style MAIN_FUNC fill:#f3e5f5
-            </div>
-        </div>
-        <div class="section-note">
-            <strong>Dependencies:</strong>
-            <ul>
-                <li><code>pygame</code>: Graphics rendering and event handling</li>
-                <li><code>math</code>: Trigonometric calculations for movement vectors</li>
-                <li><code>random</code>: Random initialization and variation</li>
-                <li><code>typing</code>: Type hints for clarity and IDE support</li>
-            </ul>
-        </div>
-        
-        <!-- Section 2: High-Level System Architecture -->
-        <h2>2. High-Level System Architecture</h2>
-        <p>The execution flow follows a classic game engine pattern: initialization → spawning → main loop with event handling, updates, and rendering.</p>
-        <div class="diagram-container">
-            <div class="mermaid">
+    PYGAME["pygame"]
+    RANDOM["random"]
+    MATH["math"]
+    TYPING["typing (List, Tuple)"]
+    SQUARE["Square class"]
+    MAINFN["main()"]
+    COLORFN["make_random_colour()"]
+
+    MAIN -->|"imports"| PYGAME
+    MAIN -->|"imports"| RANDOM
+    MAIN -->|"imports"| MATH
+    MAIN -->|"imports"| TYPING
+
+    MAIN -->|"defines"| SQUARE
+    MAIN -->|"defines"| MAINFN
+    MAIN -->|"defines"| COLORFN
+
+    MAIN -->|"calls once at startup"| COLORFN
+      </div>
+      <ul>
+        <li>Single source module with direct use of Pygame and standard library functions.</li>
+        <li>No additional package layers or service boundaries are present.</li>
+      </ul>
+    </section>
+
+    <h2>High-Level Runtime Flow</h2>
+    <section class="card diagram">
+      <div class="mermaid">
+flowchart TD
+    START["Process start"] --> INIT["Initialize pygame"]
+    INIT --> SCREEN["Create display and clock"]
+    SCREEN --> SPAWN["Create NUM_SQUARES Square instances"]
+    SPAWN --> LOOP{"running?"}
+
+    LOOP -->|"yes"| TICK["clock.tick(FPS) -> dt"]
+    TICK --> EVENTS["Read event queue"]
+    EVENTS --> QUITCHECK{"QUIT event found?"}
+    QUITCHECK -->|"yes"| STOP["Set running = False"]
+    QUITCHECK -->|"no"| UPDATEALL["For each square: square.update(squares, dt)"]
+
+    UPDATEALL --> CLEAR["Fill screen with RANDOM_COLOUR"]
+    CLEAR --> DRAWALL["For each square: draw rectangle"]
+    DRAWALL --> LIFE["Build new_squares with lifespan check"]
+    LIFE --> HUD["Render square count and FPS text"]
+    HUD --> FLIP["pygame.display.flip()"]
+    FLIP --> LOOP
+
+    STOP --> EXIT["pygame.quit()"]
+      </div>
+      <p>Frame time uses <code>dt</code> in seconds, making motion scale with elapsed time rather than fixed frame count.</p>
+    </section>
+
+    <h2>Function-Level Call Graph</h2>
+    <section class="card diagram">
+      <div class="mermaid">
 graph TD
-    INIT["Initialization<br/>(pygame, screen, clock)"]
-    SPAWN["Spawn Squares<br/>(50 instances)"]
-    LOOP["Game Loop<br/>(runs at 60 FPS)"]
-    EVENT["Event Handler<br/>(check quit)"]
-    UPDATE["Update Phase<br/>(all squares)"]
-    RENDER["Render Phase<br/>(draw & display)"]
-    LIFECYCLE["Lifecycle<br/>(respawn expired)"]
-    QUIT["Cleanup & Exit"]
-    
-    INIT --> SPAWN
-    SPAWN --> LOOP
-    LOOP --> EVENT
-    EVENT -->|quit| QUIT
-    EVENT -->|continue| UPDATE
-    UPDATE --> RENDER
-    RENDER --> LIFECYCLE
-    LIFECYCLE -->|loop| LOOP
-    
-    style INIT fill:#c8e6c9
-    style SPAWN fill:#c8e6c9
-    style LOOP fill:#fff9c4
-    style EVENT fill:#ffe0b2
-    style UPDATE fill:#bbdefb
-    style RENDER fill:#bbdefb
-    style LIFECYCLE fill:#f8bbd0
-    style QUIT fill:#d1c4e9
-            </div>
-        </div>
-        <div class="section-note">
-            <strong>Flow Stages:</strong>
-            <ol>
-                <li><strong>Initialization:</strong> Pygame engine and display initialized, clock created</li>
-                <li><strong>Spawning:</strong> 50 <code>Square</code> instances created with random properties</li>
-                <li><strong>Game Loop:</strong> Continuous cycle at 60 FPS</li>
-                <li><strong>Event Handling:</strong> Monitor for quit events</li>
-                <li><strong>Update:</strong> Each square computes new velocity and position</li>
-                <li><strong>Render:</strong> Clear screen, draw all active squares, update display</li>
-                <li><strong>Lifecycle:</strong> Replace expired squares with new ones</li>
-                <li><strong>Cleanup:</strong> Exit pygame on quit</li>
-            </ol>
-        </div>
-        
-        <!-- Section 3: Square Class Architecture -->
-        <h2>3. Square Class Architecture</h2>
-        <p>The <code>Square</code> class encapsulates all behavior for a single entity: initialization, physics updates, behavioral calculations, and rendering.</p>
-        <div class="diagram-container">
-            <div class="mermaid">
-graph TD
-    SQUARE_CLASS["Square Class"]
-    
-    subgraph "Initialization"
-        INIT["__init__<br/>- Random size<br/>- Random position<br/>- Random color<br/>- Random angle<br/>- Speed (size-based)<br/>- Lifespan<br/>- Direction timer"]
-    end
-    
-    subgraph "Behavior"
-        UPDATE["update<br/>- Direction changes<br/>- Velocity calculation<br/>- Flee behavior<br/>- Chase behavior<br/>- Boundary collisions"]
-        FLEE["compute_flee_vector<br/>- Detect larger nearby<br/>- Calculate unit vectors away"]
-        CHASE["compute_chase_vector<br/>- Detect smaller nearby<br/>- Calculate unit vectors toward"]
-    end
-    
-    subgraph "Rendering"
-        DRAW["draw<br/>- Render as pygame rect"]
-    end
-    
-    SQUARE_CLASS --> INIT
-    SQUARE_CLASS --> UPDATE
-    SQUARE_CLASS --> FLEE
-    SQUARE_CLASS --> CHASE
-    SQUARE_CLASS --> DRAW
-    
-    UPDATE -.uses.-> FLEE
-    UPDATE -.uses.-> CHASE
-    
-    style SQUARE_CLASS fill:#f3e5f5
-    style INIT fill:#c8e6c9
-    style UPDATE fill:#bbdefb
-    style FLEE fill:#fff9c4
-    style CHASE fill:#fff9c4
-    style DRAW fill:#ffe0b2
-            </div>
-        </div>
-        <div class="section-note">
-            <strong>Key Attributes:</strong>
-            <ul>
-                <li><code>size</code>: Random integer (10-50 pixels)</li>
-                <li><code>x, y</code>: Screen position (float)</li>
-                <li><code>color</code>: RGB tuple (randomized)</li>
-                <li><code>angle</code>: Movement direction (radians)</li>
-                <li><code>speed</code>: Derived from size (larger = slower)</li>
-                <li><code>lifespan</code>: Duration before respawn (30-180 frames)</li>
-                <li><code>direction_timer</code>: Accumulator for direction changes</li>
-            </ul>
-        </div>
-        
-        <!-- Section 4: Detailed Call Graph - Square.update() -->
-        <h2>4. Detailed Call Graph - Square.update()</h2>
-        <p>The <code>update()</code> method is the core of square behavior, orchestrating direction changes, velocity calculations, and boundary handling.</p>
-        <div class="diagram-container">
-            <div class="mermaid">
-graph TD
-    UPDATE["update<br/>(all_squares, dt)"]
-    TIMER["Update direction<br/>timer"]
-    CHANGE_DIR["Random direction<br/>change?"]
-    ANGLE["Calculate angle<br/>from velocity"]
-    CALC_VEL["Calculate base velocity<br/>(vx, vy)"]
-    FLEE["compute_flee_vector<br/>returns: dx, dy"]
-    APPLY_FLEE["Apply flee vector<br/>(multiply by 200)"]
-    CHASE["compute_chase_vector<br/>returns: dx, dy"]
-    APPLY_CHASE["Apply chase vector<br/>(multiply by 200)"]
-    MOVE["Update position<br/>(x += vx*dt, y += vy*dt)"]
-    BOUNCE_X["Bounce off<br/>left/right walls"]
-    BOUNCE_Y["Bounce off<br/>top/bottom walls"]
-    
-    UPDATE --> TIMER
-    TIMER --> CHANGE_DIR
-    CHANGE_DIR -->|yes| ANGLE
-    CHANGE_DIR -->|no| CALC_VEL
-    ANGLE --> CALC_VEL
-    CALC_VEL --> FLEE
-    FLEE --> APPLY_FLEE
-    APPLY_FLEE --> CHASE
-    CHASE --> APPLY_CHASE
-    APPLY_CHASE --> MOVE
-    MOVE --> BOUNCE_X
-    BOUNCE_X --> BOUNCE_Y
-    
-    style UPDATE fill:#bbdefb
-    style TIMER fill:#fff9c4
-    style CHANGE_DIR fill:#fff9c4
-    style ANGLE fill:#ffe0b2
-    style CALC_VEL fill:#ffe0b2
-    style FLEE fill:#f8bbd0
-    style APPLY_FLEE fill:#f8bbd0
-    style CHASE fill:#f8bbd0
-    style APPLY_CHASE fill:#f8bbd0
-    style MOVE fill:#c8e6c9
-    style BOUNCE_X fill:#c8e6c9
-    style BOUNCE_Y fill:#c8e6c9
-            </div>
-        </div>
-        
-        <!-- Section 5: Sequence Diagram -->
-        <h2>5. Sequence Diagram - Primary Execution Path</h2>
-        <p>This diagram traces a single frame of execution, showing interaction between the main loop, clock, events, squares, and rendering system.</p>
-        <div class="diagram-container">
-            <div class="mermaid">
+    ENTRY["if __name__ == \"__main__\""] --> MAINFN["main()"]
+
+    MAINFN --> SQCTOR["Square.__init__()"]
+    MAINFN --> UPDATE["Square.update(all_squares, dt)"]
+    MAINFN --> DRAW["Square.draw(screen)"]
+    MAINFN --> NEWSQ["Square.__init__() for respawn"]
+
+    UPDATE --> FLEE["Square.compute_flee_vector(all_squares)"]
+    UPDATE --> CHASE["Square.compute_chase_vector(all_squares)"]
+
+    FLEE --> DIST1["math.sqrt()"]
+    CHASE --> DIST2["math.sqrt()"]
+    UPDATE --> COS["math.cos()"]
+    UPDATE --> SIN["math.sin()"]
+
+    SQCTOR --> RANDINT1["random.randint()"]
+    SQCTOR --> UNIFORM1["random.uniform()"]
+    UPDATE --> UNIFORM2["random.uniform()"]
+      </div>
+      <p><code>Square.update()</code> coordinates base motion, interaction vectors, and collision response.</p>
+    </section>
+
+    <h2>Primary Execution Sequence</h2>
+    <section class="card diagram">
+      <div class="mermaid">
 sequenceDiagram
-    participant "Main"
-    participant "Clock"
-    participant "Event Queue"
-    participant "Square[i]"
-    participant "Screen"
-    
-    Main->>Main: Initialize pygame & screen
-    Main->>Main: Create 50 Square instances
-    Main->>Clock: Create clock object
-    
-    loop Game Loop (60 FPS)
-        Main->>Clock: tick(FPS)
-        activate Clock
-        Clock-->>Main: dt (delta time ms)
-        deactivate Clock
-        
-        Main->>Event Queue: Poll events
-        activate Event Queue
-        Event Queue-->>Main: QUIT or continue
-        deactivate Event Queue
-        
-        loop For each Square
-            Main->>Square: update(all_squares, dt)
-            activate Square
-                Square->>Square: Update direction timer
-                Square->>Square: Compute base velocity
-                Square->>Square: compute_flee_vector()
-                Square->>Square: Adjust velocity (flee)
-                Square->>Square: compute_chase_vector()
-                Square->>Square: Adjust velocity (chase)
-                Square->>Square: Update position
-                Square->>Square: Handle boundary collisions
-            deactivate Square
-            
-            Square-->>Main: Update complete
-        end
-        
-        Main->>Screen: Fill background color
-        
-        loop For each Square
-            alt Square lifespan < certain_variable
-                Main->>Square: draw(screen)
-                activate Square
-                Square->>Screen: pygame.draw.rect()
-                deactivate Square
-            else Lifespan expired
-                Main->>Main: Remove square & append new
+    participant B as "Python Runtime"
+    participant M as "main()"
+    participant C as "pygame.time.Clock"
+    participant E as "pygame Event Queue"
+    participant S as "Square instance"
+    participant D as "Display Surface"
+
+    B->>M: "invoke main()"
+    M->>M: "create display, caption, and clock"
+    M->>S: "construct initial square population"
+
+    loop "Frame loop while running"
+        M->>C: "tick(FPS)"
+        C-->>M: "dt seconds"
+
+        M->>E: "pygame.event.get()"
+        E-->>M: "event list"
+
+        alt "quit event present"
+            M->>M: "set running = False"
+        else "continue simulation"
+            loop "for each square"
+                M->>S: "update(squares, dt)"
+                S->>S: "maybe change direction"
+                S->>S: "compute flee and chase vectors"
+                S->>S: "move and clamp/bounce on borders"
+                S->>S: "increment age"
             end
+
+            M->>D: "fill background"
+            loop "for each square"
+                M->>S: "draw(screen)"
+                S->>D: "pygame.draw.rect(...)"
+            end
+
+            M->>M: "rebuild list with lifespan replacement"
+            M->>D: "draw HUD text (count and FPS)"
+            M->>D: "display.flip()"
         end
-        
-        Main->>Screen: pygame.display.flip()
-        activate Screen
-        Screen-->>Main: Frame rendered
-        deactivate Screen
     end
-    
-    Main->>Main: pygame.quit()
-            </div>
-        </div>
-        
-        <!-- Section 6: Behavior Model -->
-        <h2>6. Behavior Model - Square Interactions</h2>
-        <p>Squares exhibit predator-prey dynamics: they flee from larger neighbors and chase smaller ones within a defined detection radius.</p>
-        <div class="diagram-container">
-            <div class="mermaid">
-graph TB
-    SQUARE_A["Square A<br/>(size=30)"]
-    SQUARE_B["Square B<br/>(size=20)"]
-    SQUARE_C["Square C<br/>(size=40)"]
-    
-    SQUARE_A -->|chases| SQUARE_B
-    SQUARE_B -->|flees from| SQUARE_A
-    SQUARE_B -->|flees from| SQUARE_C
-    SQUARE_A -->|flees from| SQUARE_C
-    SQUARE_C -->|chases| SQUARE_A
-    SQUARE_C -->|chases| SQUARE_B
-    
-    style SQUARE_A fill:#fff9c4
-    style SQUARE_B fill:#bbdefb
-    style SQUARE_C fill:#f8bbd0
-            </div>
-        </div>
-        <div class="section-note">
-            <strong>Interaction Rules:</strong>
-            <ul>
-                <li>A square <strong>flees</strong> from any square larger than itself within <code>danger_distance</code> (50 px)</li>
-                <li>A square <strong>chases</strong> any square smaller than itself within <code>danger_distance</code> (50 px)</li>
-                <li>Flee and chase vectors are normalized and scaled (multiplied by 200 to override base movement)</li>
-                <li>Movement is also influenced by random angle changes and boundary collisions</li>
-            </ul>
-        </div>
-        
-        <!-- Section 7: Data Flow -->
-        <h2>7. Data Flow - Per-Frame Update</h2>
-        <p>Each frame follows a predictable data transformation pipeline from input state to output state.</p>
-        <div class="diagram-container">
-            <div class="mermaid">
-graph LR
-    INPUT["Input State<br/>- Position (x, y)<br/>- Angle<br/>- Size<br/>- Lifespan counter"]
-    
-    DETECT["Detection Phase<br/>- Scan all squares<br/>- Identify larger nearby<br/>- Identify smaller nearby"]
-    
-    COMPUTE["Computation Phase<br/>- Base velocity (angle)<br/>- Flee vector (from larger)<br/>- Chase vector (to smaller)<br/>- Combined velocity"]
-    
-    MOVE["Movement Phase<br/>- New position = old + velocity * dt<br/>- Bounce off walls<br/>- Clamp to bounds"]
-    
-    OUTPUT["Output State<br/>- New position<br/>- Updated timers<br/>- Ready for render"]
-    
-    INPUT --> DETECT
-    DETECT --> COMPUTE
-    COMPUTE --> MOVE
-    MOVE --> OUTPUT
-    
-    style INPUT fill:#bbdefb
-    style DETECT fill:#fff9c4
-    style COMPUTE fill:#ffe0b2
-    style MOVE fill:#c8e6c9
-    style OUTPUT fill:#f3e5f5
-            </div>
-        </div>
-        
-        <!-- Section 8: Configuration -->
-        <h2>8. Global Constants & Configuration</h2>
-        <table>
-            <thead>
-                <tr>
-                    <th>Constant</th>
-                    <th>Value</th>
-                    <th>Purpose</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td><code>SCREEN_WIDTH</code></td>
-                    <td>800</td>
-                    <td>Display width (px)</td>
-                </tr>
-                <tr>
-                    <td><code>SCREEN_HEIGHT</code></td>
-                    <td>600</td>
-                    <td>Display height (px)</td>
-                </tr>
-                <tr>
-                    <td><code>FPS</code></td>
-                    <td>60</td>
-                    <td>Target frame rate</td>
-                </tr>
-                <tr>
-                    <td><code>NUM_SQUARES</code></td>
-                    <td>50</td>
-                    <td>Initial square count</td>
-                </tr>
-                <tr>
-                    <td><code>MAX_SPEED</code></td>
-                    <td>100</td>
-                    <td>Max velocity (px/s)</td>
-                </tr>
-                <tr>
-                    <td><code>danger_distance</code></td>
-                    <td>50</td>
-                    <td>Detection radius (px)</td>
-                </tr>
-                <tr>
-                    <td><code>MIN_SIZE</code></td>
-                    <td>10</td>
-                    <td>Minimum square size (px)</td>
-                </tr>
-                <tr>
-                    <td><code>MAX_SIZE</code></td>
-                    <td>50</td>
-                    <td>Maximum square size (px)</td>
-                </tr>
-            </tbody>
-        </table>
-        
-        <!-- Section 9: Performance -->
-        <h2>9. Performance Characteristics</h2>
-        <div class="section-note">
-            <ul>
-                <li><strong>Time Complexity:</strong> O(n²) — Each square's <code>update()</code> iterates through all other squares to compute flee/chase vectors.</li>
-                <li><strong>50 Squares:</strong> ~2,500 distance checks per frame at 60 FPS = ~150,000 checks/sec</li>
-                <li><strong>Optimization Opportunity:</strong> Spatial partitioning (quadtree/grid) could reduce collision checks to O(n log n)</li>
-            </ul>
-        </div>
-        
-        <!-- Section 10: Design Decisions -->
-        <h2>10. Key Design Decisions</h2>
-        <ol>
-            <li><strong>Lifespan-based Lifecycle:</strong> Squares expire after 30-180 frames and are replaced. This ensures dynamic behavior without persistent memory leaks.</li>
-            <li><strong>Size-based Speed:</strong> Larger squares move slower, making them easier to catch and creating natural game balance.</li>
-            <li><strong>Random Direction Changes:</strong> Squares periodically randomize their direction (every 0.5-1.5 seconds), preventing deterministic patterns.</li>
-            <li><strong>Vector Scaling:</strong> Flee and chase vectors are multiplied by 200 to override base random movement, making behavior-driven navigation dominant.</li>
-            <li><strong>Angle-based Movement:</strong> Uses trigonometry (<code>cos</code>/<code>sin</code>) for smooth movement in any direction.</li>
-        </ol>
-        
-        <!-- Section 11: Technology Stack -->
-        <h2>11. Technology Stack</h2>
-        <div class="tech-stack">
-            <ul>
-                <li><strong>Language:</strong> Python 3.x</li>
-                <li><strong>Framework:</strong> Pygame 2.6.1</li>
-                <li><strong>Type Hints:</strong> Enabled (Python 3.5+)</li>
-                <li><strong>Target Platform:</strong> Windows/Linux/macOS (cross-platform)</li>
-            </ul>
-        </div>
-        
-        <!-- Section 12: Entry Point -->
-        <h2>12. Entry Point</h2>
-        <pre><code>if __name__ == "__main__":
-    main()</code></pre>
-        <p>Execution begins in the <code>main()</code> function, which initializes the pygame environment, spawns entities, and runs the continuous game loop until the user quits.</p>
-        
-        <div class="footer">
-            <p>Generated Architecture Documentation | Pygame Moving Squares Project</p>
-            <p>All diagrams created with Mermaid.js | Static HTML for offline viewing</p>
-        </div>
-    </div>
-    
-    <script>
-        mermaid.initialize({ startOnLoad: true, theme: 'default' });
-        mermaid.contentLoaded();
-    </script>
+
+    M->>M: "pygame.quit()"
+      </div>
+      <ul>
+        <li>Observed behavior: <code>age</code> is incremented in two places per frame (inside <code>update</code> and again in lifecycle pass).</li>
+        <li>Population size remains constant due to immediate respawn of expired entities.</li>
+      </ul>
+    </section>
+  </main>
+
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: "default",
+      securityLevel: "loose"
+    });
+  </script>
 </body>
 </html>

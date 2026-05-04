@@ -95,3 +95,6 @@ Automatically captured prompt log. Entries are appended in chronological order (
 ### 27-04-2026 14:52
 - **Prompt**: implement the refactoring plan in refactoring.plan.md
 
+### 04-05-2026 07:19
+- **Prompt**: regenerate the architecture documents for this project
+

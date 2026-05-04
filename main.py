@@ -197,6 +197,7 @@ def main() -> None:
                 new_squares.append(square)
             else:
                 new_squares.append(Square(square.size))
+                # q2 was done together with q1
 
         squares = new_squares
         

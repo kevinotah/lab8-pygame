@@ -402,3 +402,19 @@
 - **Hook Version**: 1.02
 - **Date**: 04-05-2026 07:24
 - **Prompt**: regenerate the flash quiz site for this project
+
+### **New Interaction**
+- **Agent Version**: 2.3
+- **Date**: 04-05-2026 07:28
+- **User**: kevin.ogbusuo@epita.fr
+- **Prompt**: regenerate the flash quiz site for this project
+- **CoPilot Mode**: Agent
+- **CoPilot Model**: GPT-5.3-Codex
+- **Socratic Mode**: ON
+- **Changes Made**: Updated docs/study_tool.html (template version 2.0) by regenerating study summary, 15 evidence-anchored flashcards, and a 15-question medium quiz with deterministic q-0..q-14 structure.
+- **Context and Reasons for Changes**: Existing study tool content had stale references and weaker traceability. Regeneration now reflects current main.py behavior, enforces required structure/validation, and preserves stable UI shell and IDs/classes.
+
+### **New Interaction**
+- **Hook Version**: 1.02
+- **Date**: 04-05-2026 07:30
+- **Prompt**: Looking at my project, tell me all that is wrong with it

@@ -13,8 +13,7 @@ MAX_SPEED: float = 120
 
 DANGER_DISTANCE: float = 80
 
-font: pygame.font.Font = pygame.font.Font(None, 50)
-fps_surface: pygame.Surface = font.render(f"{FPS} FPS", True, 'Black')
+font: pygame.font.Font = pygame.font.Font(None, 30)
 
 MIN_SIZE: int = 10
 MAX_SIZE: int = 50
@@ -169,8 +168,12 @@ def main() -> None:
                 new_squares.append(Square())
 
         squares = new_squares
+        
+        number_of_squares: pygame.Surface = font.render(f"{len(squares)} squares", True, 'Black')
+        screen.blit(number_of_squares, (50, 20))
 
-        screen.blit(fps_surface, (50, 50))
+        actual_fps: pygame.Surface = font.render(f"FPS: {clock.get_fps():.3f}", True, 'Black')
+        screen.blit(actual_fps, (50, 50))
 
         pygame.display.flip()
 

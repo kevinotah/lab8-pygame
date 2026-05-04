@@ -107,3 +107,6 @@ Automatically captured prompt log. Entries are appended in chronological order (
 ### 04-05-2026 07:35
 - **Prompt**: Update README based on current main.py
 
+### 04-05-2026 07:49
+- **Prompt**: To main.py, add comments everywhere to help me understand the code better (well, not everywhere everywhere, but where you deem necessary and helpful)
+

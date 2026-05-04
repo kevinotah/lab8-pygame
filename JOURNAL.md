@@ -447,3 +447,8 @@
 - **Changes Made**: Updated README to match current main.py behavior (50 squares, flee + chase logic, age/lifespan wording, DANGER_DISTANCE naming, and fixed notes).
 - **Context and Reasons for Changes**: The README had drifted from implementation details and used outdated terminology, so it was synchronized to prevent confusion for setup and behavior understanding.
 
+
+### **New Interaction**
+- **Hook Version**: 1.02
+- **Date**: 04-05-2026 07:49
+- **Prompt**: To main.py, add comments everywhere to help me understand the code better (well, not everywhere everywhere, but where you deem necessary and helpful)

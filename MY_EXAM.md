@@ -9,3 +9,8 @@ for all the squares, I check if two squares collide, if the one square is bigger
 ## Exercise 6:
 __q5 was done together with q6__
 After q5, the bigger one increases in size relative to the size of the square eaten. 
+
+## Exercise 7:
+I can't draw a line to save my life
+
+I'm cooked.

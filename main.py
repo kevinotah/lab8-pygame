@@ -24,6 +24,8 @@ MAX_GROWTH_SIZE = 50
 WHITE: Tuple[int, int, int] = (255, 255, 255)
 BLACK: Tuple[int, int, int] = (0, 0, 0)
 
+TRAILS_LENGTH = 30
+
 
 def make_random_colour() -> Tuple[int, int, int]:
     # Return one RGB background color and keep it fixed for the whole run.
@@ -165,6 +167,9 @@ class Square:
         # Draw the square as a filled rectangle at its current position.
         pygame.draw.rect(screen, self.color, (self.x, self.y, self.size, self.size))
         
+        
+        
+        
     def _check_collision(self, other) -> bool:
         self = pygame.Rect(self.x, self.y, self.size, self.size)
         other = pygame.Rect(other.x, other.y, other.size, other.size)
@@ -199,10 +204,12 @@ def main() -> None:
 
         # Paint the background before drawing the squares.
         screen.fill(RANDOM_COLOUR)
+        
 
         # Draw each square after it has been updated.
         for square in squares:
             square.draw(screen)
+            
             
         # Rebuild the list so expired squares are replaced with new ones.
         new_squares: List[Square] = []

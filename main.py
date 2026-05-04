@@ -94,14 +94,17 @@ class Square:
         self.y += vy * dt
 
         # Reflect off the left/right walls and clamp the square back on-screen.
-        if self.x <= 0 or self.x >= SCREEN_WIDTH - self.size:
-            self.angle = math.pi - self.angle
-            self.x = max(0, min(SCREEN_WIDTH - self.size, self.x))
+        if self.x < 0:
+            self.x = SCREEN_WIDTH - self.size
+        elif self.x > SCREEN_WIDTH - self.size:
+            self.x = 0
 
         # Reflect off the top/bottom walls and clamp the square back on-screen.
-        if self.y <= 0 or self.y >= SCREEN_HEIGHT - self.size:
-            self.angle = -self.angle
-            self.y = max(0, min(SCREEN_HEIGHT - self.size, self.y))
+        if self.y < 0:
+            self.y = SCREEN_HEIGHT - self.size
+        elif self.y > SCREEN_HEIGHT - self.size:
+            self.y = 0            
+        
 
     def compute_flee_vector(self, all_squares: List['Square']) -> Tuple[float, float]:
         # Return a vector pointing away from larger nearby squares.

@@ -639,3 +639,8 @@ Do not modify any files; just return the content.
 - **Hook Version**: 1.02
 - **Date**: 05-05-2026 16:03
 - **Prompt**: how do i run i t
+
+### **New Interaction**
+- **Hook Version**: 1.02
+- **Date**: 06-05-2026 00:56
+- **Prompt**: From PowerShell:  The argument 'assembly/do_everything_windows.ps1' to the -File parameter does not exist. Provide the path to an existing '.ps1' file as an argument to the -File parameter.

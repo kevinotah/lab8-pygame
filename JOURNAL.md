@@ -506,3 +506,19 @@
 - **Hook Version**: 1.02
 - **Date**: 05-05-2026 14:41
 - **Prompt**: Yes, go ahead and implement the plan
+
+### **New Interaction**
+- **Agent Version**: 2.3
+- **Date**: 05-05-2026 14:42
+- **User**: kevin.ogbusuo@epita.fr
+- **Prompt**: Yes, go ahead and implement the plan
+- **CoPilot Mode**: Edit
+- **CoPilot Model**: Claude Haiku 4.5
+- **Socratic Mode**: ON
+- **Changes Made**: Implemented complete Vanilla JavaScript/HTML5 Canvas port as `web/index.html`. Includes: (1) All 23 constants matching Python; (2) 4 utility functions (makeRandomColour, colorToString, randomInt, randomUniform); (3) Complete Square class with 6 methods (constructor, update, computeFleeVector, computeChaseVector, draw, checkCollision); (4) Game state management and initGame() setup; (5) gameLoop() with requestAnimationFrame, dt calculation, square updates, canvas rendering, lifespan/rebirth logic, and debug text; (6) DOMContentLoaded listener for page load initialization; (7) Comprehensive JSDoc comments mapping every JS construct to Pygame equivalent.
+- **Context and Reasons for Changes**: Executed Phase 1-3 of implementation checklist from js-port.md. Maintained strict 1-to-1 structural parity: no refactoring, identical variable names (converted to camelCase per JS convention), identical physics/logic, requestAnimationFrame replaces pygame event loop, Canvas API replaces pygame.draw. File is self-contained, ready for browser testing. Educational comments throughout trace Pygame equivalences for student learning.
+
+### **New Interaction**
+- **Hook Version**: 1.02
+- **Date**: 05-05-2026 15:06
+- **Prompt**: In my python file, when a square moving towards the border touches the border, it simply just disappears and appears on the other side. But in the JS, it actually goes through the border until the whole square passes. How?

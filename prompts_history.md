@@ -137,3 +137,6 @@ Automatically captured prompt log. Entries are appended in chronological order (
 ### 05-05-2026 15:37
 - **Prompt**: does it work though?
 
+### 05-05-2026 15:40
+- **Prompt**: yes, thats what i was asking for - a runnable assembly version of main.py
+

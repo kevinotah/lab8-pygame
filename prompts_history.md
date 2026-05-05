@@ -110,3 +110,6 @@ Automatically captured prompt log. Entries are appended in chronological order (
 ### 04-05-2026 07:49
 - **Prompt**: To main.py, add comments everywhere to help me understand the code better (well, not everywhere everywhere, but where you deem necessary and helpful)
 
+### 05-05-2026 14:26
+- **Prompt**: there are some uncompleted code in this file or wrongly implemented or nmed code .... please complete/coreect it
+

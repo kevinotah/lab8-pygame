@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smooth Squares - Canvas Port</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background-color: #f0f0f0;
+      font-family: Arial, sans-serif;
+    }
+    
+    canvas {
+      border: 2px solid #333;
+      display: block;
+      background-color: #fff;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+  </style>
+</head>
+<body>
+  <canvas id="gameCanvas"></canvas>
+
+  <script>
+    // ====================================
+    // CONSTANTS (Equivalent to Python module-level constants)
+    // ====================================
+    const SCREEN_WIDTH = 800;
+    const SCREEN_HEIGHT = 600;
+    const FPS = 60;
+    const MAX_SPEED = 120;
+    const DANGER_DISTANCE = 80;
+    
+    const MIN_SIZE = 4;
+    const MAX_SIZE = 25;
+    const MAX_GROWTH_SIZE = 50;
+    
+    const WHITE = [255, 255, 255];
+    const BLACK = [0, 0, 0];
+    
+    // ====================================
+    // UTILITY FUNCTIONS
+    // ====================================
+    
+    /**
+     * Generate a random RGB color array.
+     * Equivalent to Python: make_random_colour()
+     * @returns {number[]} Array [r, g, b] with values 0-255
+     */
+    function makeRandomColour() {
+      return [
+        Math.floor(Math.random() * 256),
+        Math.floor(Math.random() * 256),
+        Math.floor(Math.random() * 256)
+      ];
+    }
+    
+    /**
+     * Convert RGB array to CSS color string.
+     * Equivalent to Python: str(tuple) but formatted for canvas
+     * @param {number[]} rgbArray - [r, g, b] values (0-255)
+     * @returns {string} CSS rgb() format string
+     */
+    function colorToString(rgbArray) {
+      return `rgb(${rgbArray[0]}, ${rgbArray[1]}, ${rgbArray[2]})`;
+    }
+    
+    /**
+     * Generate random integer in range [min, max].
+     * Equivalent to Python: random.randint(a, b)
+     * @param {number} min - Minimum value (inclusive)
+     * @param {number} max - Maximum value (inclusive)
+     * @returns {number} Random integer
+     */
+    function randomInt(min, max) {
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+    
+    /**
+     * Generate random float in range [min, max].
+     * Equivalent to Python: random.uniform(a, b)
+     * @param {number} min - Minimum value (inclusive)
+     * @param {number} max - Maximum value (exclusive)
+     * @returns {number} Random float
+     */
+    function randomUniform(min, max) {
+      return Math.random() * (max - min) + min;
+    }
+    
+    // Chosen once at startup so the background does not change every frame.
+    // Equivalent to Python: RANDOM_COLOUR = make_random_colour()
+    const RANDOM_COLOUR = makeRandomColour();
+    
+    // ====================================
+    // SQUARE CLASS
+    // ====================================
+    
+    /**
+     * Represents a single animated square in the simulation.
+     * Equivalent to Python: class Square
+     */
+    class Square {
+      /**
+       * Initialize a new square.
+       * Equivalent to Python: __init__(self, size: int)
+       * @param {number} size - Initial size of the square
+       */
+      constructor(size) {
+        this.size = size;
+        
+        // Random position within screen bounds
+        this.x = randomInt(0, SCREEN_WIDTH - this.size);
+        this.y = randomInt(0, SCREEN_HEIGHT - this.size);
+        
+        // Random color (RGB values 50-255 to avoid very dark colors)
+        this.color = [
+          randomInt(50, 255),
+          randomInt(50, 255),
+          randomInt(50, 255)
+        ];
+        
+        // Random angle for initial direction
+        this.angle = randomUniform(0, 2 * Math.PI);
+        
+        // Direction change timer
+        this.directionTimer = 0.0;
+        this.directionChangeInterval = randomUniform(0.8, 2.0);
+        
+        // Speed based on size (smaller = faster, larger = slower)
+        const sizeRatio = (this.size - MIN_SIZE) / (MAX_SIZE - MIN_SIZE);
+        this.speed = MAX_SPEED * (1 - sizeRatio);
+        
+        // Lifespan and age tracking
+        this.lifespan = randomInt(30, 180);
+        this.age = 0.0;
+      }
+      
+      /**
+       * Update the square's position and behavior.
+       * Equivalent to Python: update(self, all_squares, dt)
+       * @param {Square[]} allSquares - List of all squares in simulation
+       * @param {number} dt - Delta time in seconds
+       */
+      update(allSquares, dt) {
+        // 1. Occasionally change direction for less predictable movement
+        this.directionTimer += dt;
+        if (this.directionTimer >= this.directionChangeInterval) {
+          // Add random angle perturbation
+          this.angle += randomUniform(-1.0, 1.0) * 0.8;
+          this.directionTimer = 0;
+          this.directionChangeInterval = randomUniform(0.8, 2.0);
+        }
+        
+        // 2. Calculate base velocity from angle and speed
+        let vx = Math.cos(this.angle) * this.speed;
+        let vy = Math.sin(this.angle) * this.speed;
+        
+        // 3. Compute behavioral forces (flee and chase)
+        const [fleeDx, fleeDy] = this.computeFleeVector(allSquares);
+        const [chaseDx, chaseDy] = this.computeChaseVector(allSquares);
+        
+        // 4. Apply behavioral forces (scaled for visibility)
+        vx += fleeDx * 120;
+        vy += fleeDy * 120;
+        vx -= chaseDx * 120;
+        vy -= chaseDy * 120;
+        
+        // 5. Update position with time scaling
+        this.x += vx * dt;
+        this.y += vy * dt;
+        
+        // 6. Handle boundary wrapping (screen edges)
+        if (this.x < 0) {
+          this.x = SCREEN_WIDTH - this.size;
+        } else if (this.x > SCREEN_WIDTH - this.size) {
+          this.x = 0;
+        }
+        
+        if (this.y < 0) {
+          this.y = SCREEN_HEIGHT - this.size;
+        } else if (this.y > SCREEN_HEIGHT - this.size) {
+          this.y = 0;
+        }
+        
+        // 7. Check collisions and growth
+        for (let square of allSquares) {
+          if (square === this) continue;
+          
+          // Grow when colliding with smaller squares
+          if (this.checkCollision(square) &&
+              this.size > square.size &&
+              this.size < MAX_GROWTH_SIZE) {
+            square.lifespan = 0;  // Mark smaller square for rebirth
+            this.size *= 1 + (square.size / MAX_SIZE);
+          }
+        }
+      }
+      
+      /**
+       * Compute vector pointing away from larger nearby squares.
+       * Equivalent to Python: compute_flee_vector(self, all_squares)
+       * @param {Square[]} allSquares - List of all squares
+       * @returns {number[]} [dx, dy] flee vector
+       */
+      computeFleeVector(allSquares) {
+        let fleeDx = 0.0;
+        let fleeDy = 0.0;
+        
+        for (let other of allSquares) {
+          if (other === this) continue;
+          
+          // Vector from other to this
+          const dx = this.x - other.x;
+          const dy = this.y - other.y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          
+          // Flee from larger neighbors within danger distance
+          if (other.size > this.size && 0 < dist && dist < DANGER_DISTANCE) {
+            const strength = 1 - (dist / DANGER_DISTANCE);
+            fleeDx += (dx / dist) * strength;
+            fleeDy += (dy / dist) * strength;
+          }
+        }
+        
+        return [fleeDx, fleeDy];
+      }
+      
+      /**
+       * Compute vector pointing toward smaller nearby squares.
+       * Equivalent to Python: compute_chase_vector(self, all_squares)
+       * @param {Square[]} allSquares - List of all squares
+       * @returns {number[]} [dx, dy] chase vector
+       */
+      computeChaseVector(allSquares) {
+        let chaseDx = 0.0;
+        let chaseDy = 0.0;
+        
+        for (let other of allSquares) {
+          if (other === this) continue;
+          
+          // Vector from other to this
+          const dx = this.x - other.x;
+          const dy = this.y - other.y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          
+          // Chase smaller neighbors within danger distance
+          if (other.size < this.size && 0 < dist && dist < DANGER_DISTANCE) {
+            const strength = 1 - (dist / DANGER_DISTANCE);
+            chaseDx += (dx / dist) * strength;
+            chaseDy += (dy / dist) * strength;
+          }
+        }
+        
+        return [chaseDx, chaseDy];
+      }
+      
+      /**
+       * Draw the square on the canvas.
+       * Equivalent to Python: draw(self, screen)
+       * Equivalent to pygame.draw.rect()
+       * @param {CanvasRenderingContext2D} ctx - Canvas 2D context
+       */
+      draw(ctx) {
+        ctx.fillStyle = colorToString(this.color);
+        ctx.fillRect(this.x, this.y, this.size, this.size);
+      }
+      
+      /**
+       * Check collision with another square (AABB).
+       * Equivalent to Python: _check_collision(self, other)
+       * Equivalent to pygame.Rect.colliderect()
+       * @param {Square} other - Other square to test
+       * @returns {boolean} True if collision detected
+       */
+      checkCollision(other) {
+        const selfRight = this.x + this.size;
+        const selfBottom = this.y + this.size;
+        const otherRight = other.x + other.size;
+        const otherBottom = other.y + other.size;
+        
+        return this.x < otherRight && selfRight > other.x &&
+               this.y < otherBottom && selfBottom > other.y;
+      }
+    }
+    
+    // ====================================
+    // GAME STATE & LOOP
+    // ====================================
+    
+    /**
+     * Global game state object.
+     * Equivalent to Python module-level variables
+     */
+    const gameState = {
+      running: true,
+      squares: [],
+      lastFrameTime: 0
+    };
+    
+    /**
+     * Initialize the game canvas and squares.
+     * Equivalent to Python: main() setup portion
+     */
+    function initGame() {
+      const canvas = document.getElementById('gameCanvas');
+      canvas.width = SCREEN_WIDTH;
+      canvas.height = SCREEN_HEIGHT;
+      
+      // Initialize squares with same distribution as Python version
+      // 5 large squares (size 25)
+      for (let i = 0; i < 5; i++) {
+        gameState.squares.push(new Square(25));
+      }
+      
+      // 10 medium squares (size 10)
+      for (let i = 0; i < 10; i++) {
+        gameState.squares.push(new Square(10));
+      }
+      
+      // 30 small squares (size 4)
+      for (let i = 0; i < 30; i++) {
+        gameState.squares.push(new Square(4));
+      }
+      
+      // Start the game loop
+      // Equivalent to: requestAnimationFrame() replaces pygame.display.flip()
+      requestAnimationFrame(gameLoop);
+    }
+    
+    /**
+     * Main game loop.
+     * Equivalent to Python: while running loop in main()
+     * Equivalent to pygame.display.flip() + frame timing
+     * @param {number} currentTime - High-resolution timestamp from requestAnimationFrame
+     */
+    function gameLoop(currentTime) {
+      const canvas = document.getElementById('gameCanvas');
+      const ctx = canvas.getContext('2d');
+      
+      // Calculate delta time (equivalent to clock.tick() / 1000.0)
+      // On first frame, initialize lastFrameTime
+      if (gameState.lastFrameTime === 0) {
+        gameState.lastFrameTime = currentTime;
+      }
+      const dt = (currentTime - gameState.lastFrameTime) / 1000.0;
+      gameState.lastFrameTime = currentTime;
+      
+      // Update all squares
+      // Equivalent to: for square in squares: square.update(squares, dt)
+      for (let square of gameState.squares) {
+        square.update(gameState.squares, dt);
+      }
+      
+      // Clear canvas and fill background
+      // Equivalent to: screen.fill(RANDOM_COLOUR) and pygame.display.flip()
+      ctx.fillStyle = colorToString(RANDOM_COLOUR);
+      ctx.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+      
+      // Draw all squares
+      // Equivalent to: for square in squares: square.draw(screen)
+      for (let square of gameState.squares) {
+        square.draw(ctx);
+      }
+      
+      // Rebuild squares list: age tracking and rebirth
+      // Equivalent to: new_squares logic at end of Python loop
+      const newSquares = [];
+      for (let square of gameState.squares) {
+        square.age += dt;
+        
+        if (square.age < square.lifespan) {
+          // Square still alive
+          newSquares.push(square);
+        } else {
+          // Square expired, rebirth it at current size
+          newSquares.push(new Square(Math.round(square.size)));
+        }
+      }
+      gameState.squares = newSquares;
+      
+      // Draw debug text
+      // Equivalent to: font.render() and screen.blit()
+      ctx.font = '30px Arial';
+      ctx.fillStyle = 'rgb(0, 0, 0)';  // Black
+      ctx.fillText(`${gameState.squares.length} squares`, 50, 20);
+      
+      // Calculate and display FPS
+      // Equivalent to: clock.get_fps()
+      const fps = (1 / (dt > 0 ? dt : 0.016)).toFixed(3);  // fallback to ~60fps if dt is 0
+      ctx.fillText(`FPS: ${fps}`, 50, 50);
+      
+      // Schedule next frame
+      // Equivalent to: pygame.display.flip() and loop continuation
+      if (gameState.running) {
+        requestAnimationFrame(gameLoop);
+      }
+    }
+    
+    // ====================================
+    // PAGE LOAD INITIALIZATION
+    // ====================================
+    
+    // Initialize game when page is fully loaded
+    // Equivalent to: if __name__ == "__main__": main()
+    document.addEventListener('DOMContentLoaded', initGame);
+  </script>
+</body>
+</html>

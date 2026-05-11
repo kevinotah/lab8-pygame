@@ -19,13 +19,10 @@ font: pygame.font.Font = pygame.font.Font(None, 30)
 
 MIN_SIZE: int = 4
 MAX_SIZE: int = 25
-MAX_GROWTH_SIZE = 50
+MAX_GROWTH_SIZE: int = 50
 
 WHITE: Tuple[int, int, int] = (255, 255, 255)
 BLACK: Tuple[int, int, int] = (0, 0, 0)
-
-TRAILS_LENGTH = 30
-GROWTH_SPEED = 500
 
 def make_random_colour() -> Tuple[int, int, int]:
     # Return one RGB background color and keep it fixed for the whole run.
@@ -166,14 +163,11 @@ class Square:
     def draw(self, screen: pygame.Surface) -> None:
         # Draw the square as a filled rectangle at its current position.
         pygame.draw.rect(screen, self.color, (self.x, self.y, self.size, self.size))
-        
-        
-        
-        
+
     def _check_collision(self, other) -> bool:
-        self = pygame.Rect(self.x, self.y, self.size, self.size)
-        other = pygame.Rect(other.x, other.y, other.size, other.size)
-        collision: bool = self.colliderect(other)
+        self_rect = pygame.Rect(self.x, self.y, self.size, self.size)
+        other_rect = pygame.Rect(other.x, other.y, other.size, other.size)
+        collision: bool = self_rect.colliderect(other_rect)
         return collision
 
 
@@ -222,7 +216,6 @@ def main() -> None:
                 new_squares.append(square)
             else:
                 new_squares.append(Square(int(square.size)))
-                # q2 was done together with q1
 
         squares = new_squares
         
